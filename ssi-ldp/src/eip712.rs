@@ -263,7 +263,7 @@ impl From<EIP712Type> for String {
         match type_ {
             EIP712Type::Struct(name) => name,
             _ => {
-                format!("{}", &type_)
+                format!("{}", type_)
             }
         }
     }
@@ -427,7 +427,7 @@ pub fn encode_type(
     let mut referenced_types = HashMap::new();
     gather_referenced_struct_types(struct_type, types, &mut referenced_types)?;
     let mut types: Vec<(&String, &StructType)> = referenced_types.into_iter().collect();
-    types.sort_by(|(name1, _), (name2, _)| name1.cmp(name2));
+    types.sort_by_key(|(name, _)| *name);
     for (name, type_) in types {
         encode_type_single(name, type_, &mut string);
     }
@@ -575,7 +575,7 @@ pub fn encode_data(
                 return Ok(int);
             }
             // Left-pad to 256 bits
-            vec![EMPTY_32[0..(32 - len)].to_vec(), int].concat()
+            [EMPTY_32[0..(32 - len)].to_vec(), int].concat()
         }
         EIP712Type::IntN(n) => {
             let n = *n;
@@ -600,7 +600,7 @@ pub fn encode_data(
             static PADDING_POS: [u8; 32] = [0; 32];
             static PADDING_NEG: [u8; 32] = [0xff; 32];
             let padding = if negative { PADDING_NEG } else { PADDING_POS };
-            vec![padding[0..(32 - len)].to_vec(), int].concat()
+            [padding[0..(32 - len)].to_vec(), int].concat()
         }
         EIP712Type::Bool => {
             let b = data.as_bool().ok_or(TypedDataHashError::ExpectedBoolean)?;
@@ -616,7 +616,7 @@ pub fn encode_data(
                 return Err(TypedDataHashError::ExpectedAddressLength(bytes.len()));
             }
             static PADDING: [u8; 12] = [0; 12];
-            vec![PADDING.to_vec(), bytes].concat()
+            [PADDING.to_vec(), bytes].concat()
         }
         EIP712Type::Array(member_type) => {
             // Note: this implementation follows eth-sig-util
@@ -806,6 +806,21 @@ impl TypedData {
         document: &(dyn LinkedDataDocument + Sync),
         proof: &Proof,
     ) -> Result<Self, TypedDataConstructionJSONError> {
+        Self::from_document_and_options_json_inner(document, proof, true).await
+    }
+
+    pub(crate) async fn from_document_and_options_json_legacy(
+        document: &(dyn LinkedDataDocument + Sync),
+        proof: &Proof,
+    ) -> Result<Self, TypedDataConstructionJSONError> {
+        Self::from_document_and_options_json_inner(document, proof, false).await
+    }
+
+    async fn from_document_and_options_json_inner(
+        document: &(dyn LinkedDataDocument + Sync),
+        proof: &Proof,
+        merge_proof_context: bool,
+    ) -> Result<Self, TypedDataConstructionJSONError> {
         let mut doc_value = document
             .to_value()
             .map_err(|e| TypedDataConstructionJSONError::DocumentToJSON(e.to_string()))?;
@@ -818,6 +833,21 @@ impl TypedData {
             .as_object_mut()
             .ok_or(TypedDataConstructionJSONError::ExpectedProofObject)?;
         proof_obj.remove("proofValue");
+        if merge_proof_context {
+            if let Some(proof_context) = proof_obj.remove("@context") {
+                let document_context = doc_obj
+                    .entry("@context")
+                    .or_insert_with(|| Value::Array(Vec::new()));
+                if !document_context.is_array() {
+                    *document_context = Value::Array(vec![document_context.take()]);
+                }
+                let contexts = document_context.as_array_mut().unwrap();
+                match proof_context {
+                    Value::Array(proof_contexts) => contexts.extend(proof_contexts),
+                    proof_context => contexts.push(proof_context),
+                }
+            }
+        }
         let info = proof_obj
             .remove("eip712")
             // Allow eip712Domain for backwards-compatibility since
@@ -863,7 +893,7 @@ impl TypedData {
         let domain_separator =
             hash_struct(&self.domain, &StructName::from("EIP712Domain"), &self.types)?;
 
-        let bytes = vec![
+        let bytes = [
             vec![0x19, 0x01],
             domain_separator.to_vec(),
             message_hash.to_vec(),
@@ -1048,7 +1078,7 @@ pub fn generate_types_with_proof(
     } else {
         return Err(TypesGenerationError::ExpectedObject);
     };
-    if map.get("proof").is_some() {
+    if map.contains_key("proof") {
         return Err(TypesGenerationError::ProofAlreadyExists);
     }
     // Put dummy data in proof object so that types for it can be generated.

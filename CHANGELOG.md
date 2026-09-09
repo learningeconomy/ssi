@@ -19,8 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [49a0473] Add PlugFest2 context (#494)
 
 ### Changed
-- LC-2160: migrate Ed25519 to dalek 2.2 and ring 0.17, retaining seeded identities and existing verification policy; reject inconsistent public/private keys.
+- LC-2160: migrate Ed25519 to dalek 2.2 and ring 0.17, retaining seeded Ed25519 identities and Ed25519 verification policy (`verify`, not `verify_strict`); reject inconsistent public/private keys.
 - LC-2160: remove vulnerable legacy dependency branches through schema/mock upgrades and narrowly vendored CACAO/BBS packages. Vendor manifests record archive checksums, revisions, licenses, and local changes.
+- BBS now uses `rand_core_compat` 0.1.1 to bridge pairing-plus's `rand_core` 0.5 interfaces to `rand` 0.8.
+- RSA-PSS verification with `rsa` 0.9 now requires a 32-byte salt for PS256, as specified by JOSE; `rsa` 0.6 previously inferred and accepted other salt lengths.
 - RSA 0.9.10 does not fix Marvin (RUSTSEC-2023-0071); deployment-specific risk approval remains required.
 - RDF canonicalization now returns `Result` and enforces default limits of 100,000 candidate permutations and n-degree depth 64. Callers propagate limit errors instead of producing partial output; `normalize_with_limits` and aggregate work statistics support bounded diagnostics.
 - The default canonicalization limits can reject small, highly symmetric datasets that previously completed, including during verification of previously issued credentials. A limit error means processing could not complete, not that a signature is invalid. Low-level Rust callers can choose explicit budgets with `normalize_with_limits`; linked-data-proof signing and verification use the defaults and do not expose that override through DIDKit options.

@@ -18,8 +18,7 @@ use ssi_jwk::{JWTKeys, JWK};
 use ssi_jws::Header;
 pub use ssi_jwt::NumericDate;
 use ssi_ldp::{
-    assert_local, Check, Error as LdpError, LinkedDataDocument, LinkedDataProofs, Proof,
-    ProofPreparation,
+    Check, Error as LdpError, LinkedDataDocument, LinkedDataProofs, Proof, ProofPreparation,
 };
 pub use ssi_ldp::{Context, LinkedDataProofOptions, VerificationResult};
 
@@ -368,6 +367,45 @@ pub const NON_DID_ISSUER_WARNING: &str =
 
 // work around https://github.com/w3c/vc-test-suite/issues/103
 pub const ALT_DEFAULT_CONTEXT: &str = "https://w3.org/2018/credentials/v1";
+
+/// Temporal policy applied to a compact-JWT credential verification.
+///
+/// The default is [`JwtTemporalPolicy::Strict`], which is the only policy used
+/// by [`Credential::verify_jwt`], [`Credential::decode_verify_jwt`] and every
+/// presentation verification path. The renewal-only policy exists solely to
+/// let a holder re-verify a credential it already holds whose `exp` has passed,
+/// so that it can discover and fetch a replacement. It never weakens `nbf`
+/// (future credentials are still rejected), the JWS signature, issuer key
+/// authorization, proof purpose, nonce or audience checks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum JwtTemporalPolicy {
+    /// Enforce `nbf` and `exp` (ordinary credential validity).
+    #[default]
+    Strict,
+    /// Enforce `nbf` but tolerate an `exp` that is already in the past. A
+    /// successful result under this policy is **renewal-only valid** and is
+    /// marked with [`Check::JwsRenewalExpired`].
+    AllowExpiredForRenewal,
+}
+
+/// Outcome of matching a compact JWS against its options and claims.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum JwtMatch {
+    /// The JWS did not match (signature input, kid, purpose, nonce, audience,
+    /// `nbf`, malformed temporal claim, or an `exp` rejected by the policy).
+    NoMatch,
+    /// The JWS matched and the credential is ordinarily temporally valid.
+    Match,
+    /// The JWS matched, but only because the renewal-only policy tolerated an
+    /// already-expired `exp`.
+    ExpiredRenewal,
+}
+
+impl JwtMatch {
+    fn is_match(self) -> bool {
+        !matches!(self, JwtMatch::NoMatch)
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -1124,6 +1162,67 @@ impl Credential {
         resolver: &dyn DIDResolver,
         context_loader: &mut ContextLoader,
     ) -> (Option<Self>, VerificationResult) {
+        Self::decode_verify_jwt_with_policy(
+            jwt,
+            options_opt,
+            resolver,
+            context_loader,
+            JwtTemporalPolicy::Strict,
+        )
+        .await
+    }
+
+    /// Renewal-only verification of a compact JWT credential.
+    ///
+    /// Identical to [`Credential::verify_jwt`] except that a signature-valid
+    /// token whose `exp` is already in the past is accepted, and the successful
+    /// result additionally carries [`Check::JwsRenewalExpired`]. `nbf`,
+    /// signature, issuer key authorization, proof purpose, nonce, audience and
+    /// structural checks are unchanged. The result is only **renewal-only
+    /// valid** and must never be treated as an ordinarily valid credential.
+    ///
+    /// This API is credential-only. Presentations are always verified strictly
+    /// through [`Presentation::verify_jwt`].
+    pub async fn verify_jwt_renewal(
+        jwt: &str,
+        options_opt: Option<LinkedDataProofOptions>,
+        resolver: &dyn DIDResolver,
+        context_loader: &mut ContextLoader,
+    ) -> VerificationResult {
+        let (_vc, result) =
+            Self::decode_verify_jwt_renewal(jwt, options_opt, resolver, context_loader).await;
+        result
+    }
+
+    /// Decode and renewal-only verify a compact JWT credential.
+    ///
+    /// See [`Credential::verify_jwt_renewal`]. Unlike the ordinary
+    /// [`Credential::decode_verify_jwt`], this never falls back to an embedded
+    /// linked-data proof: the compact JWS signature itself must verify for the
+    /// token claims to be authenticated.
+    pub async fn decode_verify_jwt_renewal(
+        jwt: &str,
+        options_opt: Option<LinkedDataProofOptions>,
+        resolver: &dyn DIDResolver,
+        context_loader: &mut ContextLoader,
+    ) -> (Option<Self>, VerificationResult) {
+        Self::decode_verify_jwt_with_policy(
+            jwt,
+            options_opt,
+            resolver,
+            context_loader,
+            JwtTemporalPolicy::AllowExpiredForRenewal,
+        )
+        .await
+    }
+
+    async fn decode_verify_jwt_with_policy(
+        jwt: &str,
+        options_opt: Option<LinkedDataProofOptions>,
+        resolver: &dyn DIDResolver,
+        context_loader: &mut ContextLoader,
+        temporal_policy: JwtTemporalPolicy,
+    ) -> (Option<Self>, VerificationResult) {
         let checks = options_opt
             .as_ref()
             .and_then(|opts| opts.checks.clone())
@@ -1183,7 +1282,12 @@ impl Credential {
         let warn_unchecked_issuer = vc.has_non_did_issuer();
 
         let (proofs, matched_jwt) = match vc
-            .filter_proofs(options_opt, Some((&header, &claims)), resolver)
+            .filter_proofs(
+                options_opt,
+                Some((&header, &claims)),
+                resolver,
+                temporal_policy,
+            )
             .await
         {
             Ok(matches) => matches,
@@ -1210,7 +1314,7 @@ impl Credential {
             }
         };
         let mut results = VerificationResult::new();
-        if matched_jwt {
+        if matched_jwt.is_match() {
             match ssi_jws::verify_bytes_warnable(header.algorithm, &signing_input, &key, &signature)
             {
                 Ok(mut warnings) => {
@@ -1221,11 +1325,27 @@ impl Credential {
                     .errors
                     .push(format!("Unable to verify signature: {}", err)),
             }
-            if results.checks.contains(&Check::JWS) && warn_unchecked_issuer {
-                results.warnings.push(NON_DID_ISSUER_WARNING.to_string());
+            if results.checks.contains(&Check::JWS) {
+                if matches!(matched_jwt, JwtMatch::ExpiredRenewal) {
+                    // The signature verified, but only the renewal-only policy
+                    // tolerated the expired `exp`. Mark renewal-only validity so
+                    // callers cannot mistake it for ordinary validity.
+                    results.checks.push(Check::JwsRenewalExpired);
+                }
+                if warn_unchecked_issuer {
+                    results.warnings.push(NON_DID_ISSUER_WARNING.to_string());
+                }
             }
 
             return (Some(vc), results);
+        }
+        // The renewal-only policy never authenticates token claims through an
+        // embedded linked-data proof: the compact JWS itself must verify.
+        if temporal_policy == JwtTemporalPolicy::AllowExpiredForRenewal {
+            return (
+                None,
+                VerificationResult::error("No applicable JWS for renewal verification"),
+            );
         }
         // No JWS verified: try to verify a proof.
         if proofs.is_empty() {
@@ -1328,7 +1448,8 @@ impl Credential {
         options: Option<LinkedDataProofOptions>,
         jwt_params: Option<(&Header, &JWTClaims)>,
         resolver: &'a dyn DIDResolver,
-    ) -> Result<(Vec<&'a Proof>, bool), String> {
+        temporal_policy: JwtTemporalPolicy,
+    ) -> Result<(Vec<&'a Proof>, JwtMatch), String> {
         // Restrict proofs to the issuer's verification methods only when the
         // issuer is a DID. URL issuers are valid in the VC data model, but do
         // not have a DID document from which to derive an allowed VM set.
@@ -1381,8 +1502,9 @@ impl Credential {
                 &options,
                 &restrict_allowed_vms,
                 &ProofPurpose::AssertionMethod,
+                temporal_policy,
             ),
-            None => false,
+            None => JwtMatch::NoMatch,
         };
         Ok((matched_proofs, matched_jwt))
     }
@@ -1400,7 +1522,10 @@ impl Credential {
             .as_ref()
             .and_then(|opts| opts.checks.clone())
             .unwrap_or_default();
-        let (proofs, _) = match self.filter_proofs(options, None, resolver).await {
+        let (proofs, _) = match self
+            .filter_proofs(options, None, resolver, JwtTemporalPolicy::Strict)
+            .await
+        {
             Ok(proofs) => proofs,
             Err(err) => {
                 return VerificationResult::error(&format!("Unable to filter proofs: {}", err));
@@ -2155,7 +2280,11 @@ impl Presentation {
                 &options,
                 &restrict_allowed_vms,
                 &ProofPurpose::Authentication,
-            ),
+                // Presentation verification is always strict: the renewal-only
+                // temporal policy is credential-only.
+                JwtTemporalPolicy::Strict,
+            )
+            .is_match(),
             None => false,
         };
         Ok((matched_proofs, matched_jwt))
@@ -2371,7 +2500,8 @@ fn jwt_matches(
     options: &LinkedDataProofOptions,
     restrict_allowed_vms: &Option<Vec<String>>,
     expected_proof_purpose: &ProofPurpose,
-) -> bool {
+    temporal_policy: JwtTemporalPolicy,
+) -> JwtMatch {
     let LinkedDataProofOptions {
         verification_method,
         proof_purpose,
@@ -2381,31 +2511,45 @@ fn jwt_matches(
         ..
     } = options;
     if let Some(ref vm) = verification_method {
-        assert_local!(header.key_id.as_ref() == Some(&vm.to_string()));
+        if header.key_id.as_ref() != Some(&vm.to_string()) {
+            return JwtMatch::NoMatch;
+        }
     }
     if let Some(kid) = header.key_id.as_ref() {
         if let Some(allowed_vms) = restrict_allowed_vms {
-            assert_local!(allowed_vms.contains(kid));
+            if !allowed_vms.contains(kid) {
+                return JwtMatch::NoMatch;
+            }
         }
     }
     if let Some(nbf) = claims.not_before {
         let nbf_date_time: LocalResult<DateTime<Utc>> = nbf.into();
         if let Some(time) = nbf_date_time.latest() {
-            assert_local!(created.unwrap_or_else(Utc::now) >= time);
+            if created.unwrap_or_else(Utc::now) < time {
+                return JwtMatch::NoMatch;
+            }
         } else {
-            return false;
+            return JwtMatch::NoMatch;
         }
     }
+    let mut expired_for_renewal = false;
     if let Some(exp) = claims.expiration_time {
         let exp_date_time: LocalResult<DateTime<Utc>> = exp.into();
         if let Some(time) = exp_date_time.earliest() {
-            assert_local!(Utc::now() < time);
+            if Utc::now() >= time {
+                match temporal_policy {
+                    JwtTemporalPolicy::Strict => return JwtMatch::NoMatch,
+                    JwtTemporalPolicy::AllowExpiredForRenewal => expired_for_renewal = true,
+                }
+            }
         } else {
-            return false;
+            return JwtMatch::NoMatch;
         }
     }
     if let Some(ref challenge) = challenge {
-        assert_local!(claims.nonce.as_ref() == Some(challenge));
+        if claims.nonce.as_ref() != Some(challenge) {
+            return JwtMatch::NoMatch;
+        }
     }
     if let Some(ref aud) = claims.audience {
         // https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3
@@ -2418,20 +2562,24 @@ fn jwt_matches(
         if let Some(domain) = domain {
             // Use domain for audience, and require a match.
             if !aud.into_iter().any(|aud| aud.as_str() == domain) {
-                return false;
+                return JwtMatch::NoMatch;
             }
         } else {
             // TODO: allow using verifier DID for audience?
-            return false;
+            return JwtMatch::NoMatch;
         }
     }
     if let Some(ref proof_purpose) = proof_purpose {
         if proof_purpose != expected_proof_purpose {
-            return false;
+            return JwtMatch::NoMatch;
         }
     }
     // TODO: support more claim checking via additional LDP options
-    true
+    if expired_for_renewal {
+        JwtMatch::ExpiredRenewal
+    } else {
+        JwtMatch::Match
+    }
 }
 
 #[cfg(test)]
@@ -2474,12 +2622,12 @@ pub(crate) mod tests {
         .unwrap();
 
         let (proofs, matched_jwt) = credential
-            .filter_proofs(None, None, &DIDExample)
+            .filter_proofs(None, None, &DIDExample, JwtTemporalPolicy::Strict)
             .await
             .unwrap();
 
         assert_eq!(proofs.len(), 1);
-        assert!(!matched_jwt);
+        assert!(!matched_jwt.is_match());
     }
 
     #[test]
@@ -2880,6 +3028,136 @@ pub(crate) mod tests {
         .await;
         println!("{:#?}", verification_result);
         assert!(!verification_result.errors.is_empty());
+    }
+
+    #[async_std::test]
+    async fn decode_verify_jwt_renewal_only() {
+        let key: JWK = serde_json::from_str(JWK_JSON).unwrap();
+
+        let vc_str = r###"{
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://www.w3.org/2018/credentials/examples/v1"
+            ],
+            "id": "http://example.org/credentials/192783",
+            "type": "VerifiableCredential",
+            "issuer": "did:example:foo",
+            "issuanceDate": "2020-08-25T11:26:53Z",
+            "credentialSubject": {
+                "id": "did:example:a6c78986cc36418b95a22d7f736",
+                "spouse": "Example Person"
+            }
+        }"###;
+
+        let aud = "did:example:90336644520443d28ba78beb949".to_string();
+        let options = LinkedDataProofOptions {
+            domain: Some(aud),
+            checks: None,
+            created: None,
+            verification_method: Some(URI::String("did:example:foo#key1".to_string())),
+            ..Default::default()
+        };
+        let mut context_loader = ssi_json_ld::ContextLoader::default();
+
+        // Expired: ordinary verification rejects, renewal-only verification
+        // accepts the same signed bytes and marks them renewal-only.
+        let expired = Credential {
+            issuance_date: Some(VCDateTime::from(Utc::now() - chrono::Duration::weeks(2))),
+            expiration_date: Some(VCDateTime::from(Utc::now() - chrono::Duration::weeks(1))),
+            ..serde_json::from_str(vc_str).unwrap()
+        };
+        let expired_jwt = expired
+            .generate_jwt(Some(&key), &options, &DIDExample)
+            .await
+            .unwrap();
+
+        let (strict_vc, strict_result) = Credential::decode_verify_jwt(
+            &expired_jwt,
+            Some(options.clone()),
+            &DIDExample,
+            &mut context_loader,
+        )
+        .await;
+        assert!(strict_vc.is_none());
+        assert!(!strict_result.errors.is_empty());
+        assert!(!strict_result.checks.contains(&Check::JWS));
+
+        let (renewal_vc, renewal_result) = Credential::decode_verify_jwt_renewal(
+            &expired_jwt,
+            Some(options.clone()),
+            &DIDExample,
+            &mut context_loader,
+        )
+        .await;
+        assert!(
+            renewal_result.errors.is_empty(),
+            "{:?}",
+            renewal_result.errors
+        );
+        assert!(renewal_result.checks.contains(&Check::JWS));
+        assert!(renewal_result.checks.contains(&Check::JwsRenewalExpired));
+        let renewal_vc = renewal_vc.unwrap();
+        assert_eq!(renewal_vc.id, expired.id);
+
+        // An ordinarily valid token is not marked renewal-only under the same
+        // renewal policy.
+        let valid = Credential {
+            issuance_date: Some(VCDateTime::from(Utc::now() - chrono::Duration::weeks(1))),
+            expiration_date: Some(VCDateTime::from(Utc::now() + chrono::Duration::weeks(1))),
+            ..serde_json::from_str(vc_str).unwrap()
+        };
+        let valid_jwt = valid
+            .generate_jwt(Some(&key), &options, &DIDExample)
+            .await
+            .unwrap();
+        let (_valid_vc, valid_result) = Credential::decode_verify_jwt_renewal(
+            &valid_jwt,
+            Some(options.clone()),
+            &DIDExample,
+            &mut context_loader,
+        )
+        .await;
+        assert!(valid_result.errors.is_empty(), "{:?}", valid_result.errors);
+        assert!(valid_result.checks.contains(&Check::JWS));
+        assert!(!valid_result.checks.contains(&Check::JwsRenewalExpired));
+
+        // A future `nbf` is never tolerated, even for renewal.
+        let future = Credential {
+            issuance_date: Some(VCDateTime::from(Utc::now() + chrono::Duration::weeks(1))),
+            expiration_date: Some(VCDateTime::from(Utc::now() + chrono::Duration::weeks(2))),
+            ..serde_json::from_str(vc_str).unwrap()
+        };
+        let future_jwt = future
+            .generate_jwt(Some(&key), &options, &DIDExample)
+            .await
+            .unwrap();
+        let (future_vc, future_result) = Credential::decode_verify_jwt_renewal(
+            &future_jwt,
+            Some(options.clone()),
+            &DIDExample,
+            &mut context_loader,
+        )
+        .await;
+        assert!(future_vc.is_none());
+        assert!(!future_result.errors.is_empty());
+
+        // A forged signature is rejected in renewal mode too: the decode API
+        // still returns the parsed credential alongside the errors (matching
+        // `decode_verify_jwt`), but no JWS check is reported.
+        let mut forged = expired_jwt.clone().into_bytes();
+        let last = forged.len() - 2;
+        forged[last] = if forged[last] == b'A' { b'B' } else { b'A' };
+        let forged_jwt = String::from_utf8(forged).unwrap();
+        let (_forged_vc, forged_result) = Credential::decode_verify_jwt_renewal(
+            &forged_jwt,
+            Some(options.clone()),
+            &DIDExample,
+            &mut context_loader,
+        )
+        .await;
+        assert!(!forged_result.errors.is_empty());
+        assert!(!forged_result.checks.contains(&Check::JWS));
+        assert!(!forged_result.checks.contains(&Check::JwsRenewalExpired));
     }
 
     #[async_std::test]

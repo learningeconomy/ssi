@@ -297,6 +297,15 @@ pub enum Check {
     Proof,
     #[serde(rename = "JWS")]
     JWS,
+    /// The credential's compact JWS signature verified, but its `exp`
+    /// (or embedded expiration) is in the past. This check is emitted only by
+    /// the credential-only renewal verification API
+    /// (`Credential::verify_jwt_renewal` / `decode_verify_jwt_renewal`); it is
+    /// never emitted by ordinary verification. A result carrying this check is
+    /// **renewal-only valid**, not ordinarily valid: callers must not treat it
+    /// as proof that the credential is currently usable.
+    #[serde(rename = "JWSRenewalExpired")]
+    JwsRenewalExpired,
     Status,
     Schema,
 }
@@ -307,6 +316,7 @@ impl FromStr for Check {
         match purpose {
             "proof" => Ok(Self::Proof),
             "JWS" => Ok(Self::JWS),
+            "JWSRenewalExpired" => Ok(Self::JwsRenewalExpired),
             "credentialStatus" => Ok(Self::Status),
             "credentialSchema" => Ok(Self::Schema),
             _ => Err(Error::UnsupportedCheck),
@@ -326,6 +336,7 @@ impl From<Check> for String {
         match check {
             Check::Proof => "proof".to_string(),
             Check::JWS => "JWS".to_string(),
+            Check::JwsRenewalExpired => "JWSRenewalExpired".to_string(),
             Check::Status => "credentialStatus".to_string(),
             Check::Schema => "credentialSchema".to_string(),
         }

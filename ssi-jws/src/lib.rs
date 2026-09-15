@@ -770,6 +770,47 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rsa")]
+    fn ps256_requires_sha256_salt_length() {
+        use rand::SeedableRng;
+
+        let key: JWK =
+            serde_json::from_str(include_str!("../../tests/rsa2048-2020-08-25.json")).unwrap();
+        let JWKParams::RSA(params) = &key.params else {
+            unreachable!()
+        };
+        let private_key = rsa::RsaPrivateKey::try_from(params).unwrap();
+        let public_key = private_key.to_public_key();
+        let public_jwk = key.to_public();
+        let data = b"PS256 salt-length policy";
+        let hashed = ssi_crypto::hashes::sha256::sha256(data);
+        let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+
+        for salt_len in [32, 20] {
+            let signature = private_key
+                .sign_with_rng(
+                    &mut rng,
+                    rsa::Pss::new_with_salt::<sha2::Sha256>(salt_len),
+                    &hashed,
+                )
+                .unwrap();
+            // Both signatures are valid RSA-PSS; only the 32-byte salt is JOSE PS256.
+            public_key
+                .verify(
+                    rsa::Pss::new_with_salt::<sha2::Sha256>(salt_len),
+                    &hashed,
+                    &signature,
+                )
+                .unwrap();
+            assert_eq!(
+                verify_bytes(Algorithm::PS256, data, &public_jwk, &signature).is_ok(),
+                salt_len == 32,
+                "PS256 verification with a {salt_len}-byte salt"
+            );
+        }
+    }
+
+    #[test]
     #[cfg(feature = "secp256k1")]
     fn secp256k1_sign_verify() {
         let key = JWK::generate_secp256k1().unwrap();

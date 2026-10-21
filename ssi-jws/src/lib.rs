@@ -73,77 +73,70 @@ fn base64_encode_json<T: Serialize>(object: &T) -> Result<String, Error> {
 }
 
 pub fn sign_bytes(algorithm: Algorithm, data: &[u8], key: &JWK) -> Result<Vec<u8>, Error> {
-    let signature = match &key.params {
-        #[cfg(feature = "ring")]
-        JWKParams::RSA(rsa_params) => {
-            rsa_params.validate_key_size()?;
-            let key_pair = ring::signature::RsaKeyPair::try_from(rsa_params)?;
-            let padding_alg: &dyn ring::signature::RsaEncoding = match algorithm {
-                Algorithm::RS256 => &ring::signature::RSA_PKCS1_SHA256,
-                Algorithm::PS256 => &ring::signature::RSA_PSS_SHA256,
-                _ => return Err(Error::AlgorithmNotImplemented),
-            };
-            let mut sig = vec![0u8; key_pair.public_modulus_len()];
-            let rng = ring::rand::SystemRandom::new();
-            key_pair.sign(padding_alg, &rng, data, &mut sig)?;
-            sig
-        }
-        #[cfg(feature = "rsa")]
-        JWKParams::RSA(rsa_params) => {
-            rsa_params.validate_key_size()?;
-            let private_key = rsa::RsaPrivateKey::try_from(rsa_params)?;
-            let padding;
-            let hashed;
-            match algorithm {
-                Algorithm::RS256 => {
-                    let hash = rsa::hash::Hash::SHA2_256;
-                    padding = rsa::padding::PaddingScheme::new_pkcs1v15_sign(Some(hash));
-                    hashed = ssi_crypto::hashes::sha256::sha256(data);
-                }
-                Algorithm::PS256 => {
-                    let hash = rsa::hash::Hash::SHA2_256;
-                    let rng = rand::rngs::OsRng {};
-                    padding =
-                        rsa::PaddingScheme::new_pss_with_salt::<sha2::Sha256, _>(rng, hash.size());
-                    hashed = ssi_crypto::hashes::sha256::sha256(data);
-                }
-                _ => return Err(Error::AlgorithmNotImplemented),
-            }
-            private_key
-                .sign(padding, &hashed)
-                .map_err(ssi_jwk::Error::from)?
-        }
-        #[cfg(any(feature = "ring", feature = "ed25519"))]
-        JWKParams::OKP(okp) => {
-            use blake2::digest::{consts::U32, Digest};
-            if algorithm != Algorithm::EdDSA && algorithm != Algorithm::EdBlake2b {
-                return Err(Error::UnsupportedAlgorithm);
-            }
-            if okp.curve != *"Ed25519" {
-                return Err(ssi_jwk::Error::CurveNotImplemented(okp.curve.to_string()).into());
-            }
-            let hash = match algorithm {
-                Algorithm::EdBlake2b => <blake2::Blake2b<U32> as Digest>::new_with_prefix(data)
-                    .finalize()
-                    .to_vec(),
-                _ => data.to_vec(),
-            };
+    let signature =
+        match &key.params {
             #[cfg(feature = "ring")]
-            {
-                let key_pair = ring::signature::Ed25519KeyPair::try_from(okp)?;
-                key_pair.sign(&hash).as_ref().to_vec()
+            JWKParams::RSA(rsa_params) => {
+                rsa_params.validate_key_size()?;
+                let key_pair = ring::signature::RsaKeyPair::try_from(rsa_params)?;
+                let padding_alg: &dyn ring::signature::RsaEncoding = match algorithm {
+                    Algorithm::RS256 => &ring::signature::RSA_PKCS1_SHA256,
+                    Algorithm::PS256 => &ring::signature::RSA_PSS_SHA256,
+                    _ => return Err(Error::AlgorithmNotImplemented),
+                };
+                let mut sig = vec![0u8; key_pair.public().modulus_len()];
+                let rng = ring::rand::SystemRandom::new();
+                key_pair.sign(padding_alg, &rng, data, &mut sig)?;
+                sig
             }
-            // TODO: SymmetricParams
-            #[cfg(all(feature = "ed25519", not(feature = "ring")))]
-            {
-                let keypair = ed25519_dalek::Keypair::try_from(okp)?;
-                use ed25519_dalek::Signer;
-                keypair.sign(&hash).to_bytes().to_vec()
+            #[cfg(all(feature = "rsa", not(feature = "ring")))]
+            JWKParams::RSA(rsa_params) => {
+                rsa_params.validate_key_size()?;
+                let private_key = rsa::RsaPrivateKey::try_from(rsa_params)?;
+                let hashed = ssi_crypto::hashes::sha256::sha256(data);
+                match algorithm {
+                    Algorithm::RS256 => private_key
+                        .sign(rsa::Pkcs1v15Sign::new::<sha2::Sha256>(), &hashed)
+                        .map_err(ssi_jwk::Error::from)?,
+                    Algorithm::PS256 => {
+                        let mut rng = rand::rngs::OsRng {};
+                        private_key
+                            .sign_with_rng(&mut rng, rsa::Pss::new::<sha2::Sha256>(), &hashed)
+                            .map_err(ssi_jwk::Error::from)?
+                    }
+                    _ => return Err(Error::AlgorithmNotImplemented),
+                }
             }
-        }
-        #[allow(unused)]
-        JWKParams::EC(ec) => {
-            match algorithm {
+            #[cfg(any(feature = "ring", feature = "ed25519"))]
+            JWKParams::OKP(okp) => {
+                use blake2::digest::{consts::U32, Digest};
+                if algorithm != Algorithm::EdDSA && algorithm != Algorithm::EdBlake2b {
+                    return Err(Error::UnsupportedAlgorithm);
+                }
+                if okp.curve != *"Ed25519" {
+                    return Err(ssi_jwk::Error::CurveNotImplemented(okp.curve.to_string()).into());
+                }
+                let hash = match algorithm {
+                    Algorithm::EdBlake2b => <blake2::Blake2b<U32> as Digest>::new_with_prefix(data)
+                        .finalize()
+                        .to_vec(),
+                    _ => data.to_vec(),
+                };
+                #[cfg(feature = "ring")]
+                {
+                    let key_pair = ring::signature::Ed25519KeyPair::try_from(okp)?;
+                    key_pair.sign(&hash).as_ref().to_vec()
+                }
+                // TODO: SymmetricParams
+                #[cfg(all(feature = "ed25519", not(feature = "ring")))]
+                {
+                    let keypair = ed25519_dalek::SigningKey::try_from(okp)?;
+                    use ed25519_dalek::Signer;
+                    keypair.sign(&hash).to_bytes().to_vec()
+                }
+            }
+            #[allow(unused)]
+            JWKParams::EC(ec) => match algorithm {
                 #[cfg(feature = "p384")]
                 Algorithm::ES384 => {
                     use p384::ecdsa::signature::{Signature, Signer};
@@ -223,10 +216,9 @@ pub fn sign_bytes(algorithm: Algorithm, data: &[u8], key: &JWK) -> Result<Vec<u8
                 _ => {
                     return Err(Error::UnsupportedAlgorithm);
                 }
-            }
-        }
-        _ => return Err(Error::JWK(ssi_jwk::Error::KeyTypeNotImplemented)),
-    };
+            },
+            _ => return Err(Error::JWK(ssi_jwk::Error::KeyTypeNotImplemented)),
+        };
     clear_on_drop::clear_stack(1);
     Ok(signature)
 }
@@ -268,30 +260,21 @@ pub fn verify_bytes_warnable(
             };
             public_key.verify(parameters, data, signature)?
         }
-        #[cfg(feature = "rsa")]
+        #[cfg(all(feature = "rsa", not(feature = "ring")))]
         JWKParams::RSA(rsa_params) => {
             rsa_params.validate_key_size()?;
-            use rsa::PublicKey;
-            let public_key =
-                rsa::RsaPublicKey::try_from(rsa_params).map_err(ssi_jwk::Error::from)?;
-            let padding;
-            let hashed;
-            match algorithm {
+            let public_key = rsa::RsaPublicKey::try_from(rsa_params)?;
+            let hashed = ssi_crypto::hashes::sha256::sha256(data);
+            let result = match algorithm {
                 Algorithm::RS256 => {
-                    let hash = rsa::hash::Hash::SHA2_256;
-                    padding = rsa::padding::PaddingScheme::new_pkcs1v15_sign(Some(hash));
-                    hashed = ssi_crypto::hashes::sha256::sha256(data);
+                    public_key.verify(rsa::Pkcs1v15Sign::new::<sha2::Sha256>(), &hashed, signature)
                 }
                 Algorithm::PS256 => {
-                    let rng = rand::rngs::OsRng {};
-                    padding = rsa::PaddingScheme::new_pss::<sha2::Sha256, _>(rng);
-                    hashed = ssi_crypto::hashes::sha256::sha256(data);
+                    public_key.verify(rsa::Pss::new::<sha2::Sha256>(), &hashed, signature)
                 }
                 _ => return Err(Error::AlgorithmNotImplemented),
-            }
-            public_key
-                .verify(padding, &hashed, signature)
-                .map_err(ssi_jwk::Error::from)?;
+            };
+            result.map_err(ssi_jwk::Error::from)?;
         }
         // TODO: SymmetricParams
         #[cfg(any(feature = "ring", feature = "ed25519"))]
@@ -316,9 +299,10 @@ pub fn verify_bytes_warnable(
             #[cfg(feature = "ed25519")]
             {
                 use ed25519_dalek::Verifier;
-                let public_key = ed25519_dalek::PublicKey::try_from(okp)?;
-                let signature = ed25519_dalek::Signature::from_bytes(signature)
+                let public_key = ed25519_dalek::VerifyingKey::try_from(okp)?;
+                let signature = ed25519_dalek::Signature::from_slice(signature)
                     .map_err(ssi_jwk::Error::from)?;
+                // Retain ordinary verification, not the additional verify_strict policy.
                 public_key
                     .verify(&hash, &signature)
                     .map_err(ssi_jwk::Error::from)?;
@@ -469,9 +453,9 @@ pub fn recover(algorithm: Algorithm, data: &[u8], signature: &[u8]) -> Result<JW
             let sig = k256::ecdsa::recoverable::Signature::try_from(signature)
                 .map_err(ssi_jwk::Error::from)?;
             let hash = ssi_crypto::hashes::sha256::sha256(data);
-            let digest = k256::elliptic_curve::FieldBytes::<k256::Secp256k1>::from_slice(&hash);
+            let digest = k256::elliptic_curve::FieldBytes::<k256::Secp256k1>::from(hash);
             let recovered_key = sig
-                .recover_verifying_key_from_digest_bytes(digest)
+                .recover_verifying_key_from_digest_bytes(&digest)
                 .map_err(ssi_jwk::Error::from)?;
             use ssi_jwk::ECParams;
             let jwk = JWK {
@@ -717,6 +701,46 @@ pub fn decode_unverified(jws: &str) -> Result<(Header, Vec<u8>), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    #[cfg(any(feature = "ed25519", feature = "ring"))]
+    fn ed25519_rfc8037_sign_verify() {
+        // RFC 8037, Appendix A.1 and A.4: independent deterministic signing fixture.
+        let key: JWK = serde_json::from_value(serde_json::json!({
+            "kty": "OKP",
+            "crv": "Ed25519",
+            "d": "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A",
+            "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+        }))
+        .unwrap();
+        let input = b"eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc";
+        let expected = base64::decode_config(
+            "hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg",
+            base64::URL_SAFE_NO_PAD,
+        ).unwrap();
+        assert_eq!(sign_bytes(Algorithm::EdDSA, input, &key).unwrap(), expected);
+        let public_key = key.to_public();
+        verify_bytes(Algorithm::EdDSA, input, &public_key, &expected).unwrap();
+        assert!(verify_bytes(Algorithm::EdDSA, b"changed", &public_key, &expected).is_err());
+        assert!(verify_bytes(Algorithm::EdDSA, input, &public_key, &expected[..63]).is_err());
+        let mut altered = expected;
+        altered[0] ^= 1;
+        assert!(verify_bytes(Algorithm::EdDSA, input, &public_key, &altered).is_err());
+    }
+
+    #[test]
+    #[cfg(any(feature = "ed25519", feature = "ring"))]
+    fn ed25519_sign_rejects_inconsistent_key() {
+        let mut key = JWK::generate_ed25519_from_bytes(&[b'a'; 32]).unwrap();
+        let other = JWK::generate_ed25519_from_bytes(&[b'b'; 32]).unwrap();
+        let JWKParams::OKP(params) = &mut key.params else {
+            unreachable!()
+        };
+        let JWKParams::OKP(other) = &other.params else {
+            unreachable!()
+        };
+        params.public_key = other.public_key.clone();
+        assert!(sign_bytes(Algorithm::EdDSA, b"message", &key).is_err());
+    }
 
     #[test]
     #[cfg(feature = "rsa")]
@@ -743,6 +767,47 @@ mod tests {
         assert_eq!(jws, "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-0Qc_lF5YKt_O8W2Fp5jujGbds9uJdbF9CUAr7t1dnZcAcQjbKBYNX4BAynRFdiuB--f_nZLgrnbyTyWzO75vRK5h6xBArLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw");
 
         decode_verify(&jws, &key).unwrap();
+    }
+
+    #[test]
+    #[cfg(feature = "rsa")]
+    fn ps256_requires_sha256_salt_length() {
+        use rand::SeedableRng;
+
+        let key: JWK =
+            serde_json::from_str(include_str!("../../tests/rsa2048-2020-08-25.json")).unwrap();
+        let JWKParams::RSA(params) = &key.params else {
+            unreachable!()
+        };
+        let private_key = rsa::RsaPrivateKey::try_from(params).unwrap();
+        let public_key = private_key.to_public_key();
+        let public_jwk = key.to_public();
+        let data = b"PS256 salt-length policy";
+        let hashed = ssi_crypto::hashes::sha256::sha256(data);
+        let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+
+        for salt_len in [32, 20] {
+            let signature = private_key
+                .sign_with_rng(
+                    &mut rng,
+                    rsa::Pss::new_with_salt::<sha2::Sha256>(salt_len),
+                    &hashed,
+                )
+                .unwrap();
+            // Both signatures are valid RSA-PSS; only the 32-byte salt is JOSE PS256.
+            public_key
+                .verify(
+                    rsa::Pss::new_with_salt::<sha2::Sha256>(salt_len),
+                    &hashed,
+                    &signature,
+                )
+                .unwrap();
+            assert_eq!(
+                verify_bytes(Algorithm::PS256, data, &public_jwk, &signature).is_ok(),
+                salt_len == 32,
+                "PS256 verification with a {salt_len}-byte salt"
+            );
+        }
     }
 
     #[test]

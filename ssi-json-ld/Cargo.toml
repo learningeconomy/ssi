@@ -20,7 +20,6 @@ json-syntax = "0.9"
 futures = "0.3"
 serde_json = "1.0.95"
 lazy_static = "1.4"
-combination = "0.1"
 grdf = "0.16.2"
 ssi-contexts = { version = "0.1.5", path = "../contexts/" }
 ssi-crypto = { path = "../ssi-crypto", version = "0.1" }
@@ -29,3 +28,6 @@ ssi-crypto = { path = "../ssi-crypto", version = "0.1" }
 difference = "2.0"
 nquads-syntax = "0.10.0"
 tokio = { version = "1.27.0", features = ["rt", "macros"] }
+# `to_value_with` lives behind json-syntax's `serde` feature. Enabled for tests only so the
+# feature is not forced on downstream builds.
+json-syntax = { version = "0.9", features = ["serde"] }

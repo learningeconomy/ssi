@@ -6,6 +6,22 @@ use ssi_json_ld::ContextLoader;
 use ssi_jwk::{ECParams, Params as JWKParams, JWK};
 use std::collections::HashMap as Map;
 
+fn jwk_from_verifying_key(key: &k256::ecdsa::VerifyingKey) -> Result<JWK, Error> {
+    Ok(JWK {
+        params: JWKParams::EC(ECParams::try_from(
+            &k256::PublicKey::from_sec1_bytes(&key.to_bytes()).map_err(ssi_jwk::Error::from)?,
+        )?),
+        public_key_use: None,
+        key_operations: None,
+        algorithm: None,
+        key_id: None,
+        x509_url: None,
+        x509_certificate_chain: None,
+        x509_thumbprint_sha1: None,
+        x509_thumbprint_sha256: None,
+    })
+}
+
 pub struct Eip712Signature2021;
 impl Eip712Signature2021 {
     pub(crate) async fn sign(
@@ -218,21 +234,19 @@ impl EthereumEip712Signature2021 {
         let recovered_key = sig
             .recover_verifying_key(&bytes)
             .map_err(ssi_jwk::Error::from)?;
-        let jwk = JWK {
-            params: JWKParams::EC(ECParams::try_from(
-                &k256::PublicKey::from_sec1_bytes(&recovered_key.to_bytes())
-                    .map_err(ssi_jwk::Error::from)?,
-            )?),
-            public_key_use: None,
-            key_operations: None,
-            algorithm: None,
-            key_id: None,
-            x509_url: None,
-            x509_certificate_chain: None,
-            x509_thumbprint_sha1: None,
-            x509_thumbprint_sha256: None,
-        };
-        vm.match_jwk(&jwk)?;
+        let jwk = jwk_from_verifying_key(&recovered_key)?;
+        if vm.match_jwk(&jwk).is_err() && !proof.context.is_null() {
+            let legacy_typed_data =
+                TypedData::from_document_and_options_json_legacy(document, proof).await?;
+            let legacy_bytes = legacy_typed_data.bytes()?;
+            let legacy_recovered_key = sig
+                .recover_verifying_key(&legacy_bytes)
+                .map_err(ssi_jwk::Error::from)?;
+            let legacy_jwk = jwk_from_verifying_key(&legacy_recovered_key)?;
+            vm.match_jwk(&legacy_jwk)?;
+        } else {
+            vm.match_jwk(&jwk)?;
+        }
         Ok(Default::default())
     }
 }
@@ -360,10 +374,10 @@ async fn string_from_document_and_options(
     let doc_dataset = document
         .to_dataset_for_signing(None, context_loader)
         .await?;
-    let doc_dataset_normalized = urdna2015::normalize(doc_dataset.quads().map(QuadRef::from));
+    let doc_dataset_normalized = urdna2015::normalize(doc_dataset.quads().map(QuadRef::from))?;
     let doc_normalized = doc_dataset_normalized.into_nquads();
     let sigopts_dataset_normalized =
-        urdna2015::normalize(sigopts_dataset.quads().map(QuadRef::from));
+        urdna2015::normalize(sigopts_dataset.quads().map(QuadRef::from))?;
     let sigopts_normalized = sigopts_dataset_normalized.into_nquads();
     let msg = sigopts_normalized + "\n" + &doc_normalized;
     Ok(msg)

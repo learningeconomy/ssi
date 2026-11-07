@@ -1,21 +1,58 @@
 {
   "@context": {
-    "type": "@type",
-    "id": "@id",
-    "HTML": {
-      "@id": "rdf:HTML"
-    },
     "@vocab": "http://schema.org/",
+    "bibo": "http://purl.org/ontology/bibo/",
     "brick": "https://brickschema.org/schema/Brick#",
+    "cmns-cls": "https://www.omg.org/spec/Commons/Classifiers/",
+    "cmns-col": "https://www.omg.org/spec/Commons/Collections/",
+    "cmns-dt": "https://www.omg.org/spec/Commons/DatesAndTimes/",
+    "cmns-ge": "https://www.omg.org/spec/Commons/GeopoliticalEntities/",
+    "cmns-id": "https://www.omg.org/spec/Commons/Identifiers/",
+    "cmns-loc": "https://www.omg.org/spec/Commons/Locations/",
+    "cmns-q": "https://www.omg.org/spec/Commons/Quantities/",
+    "cmns-txt": "https://www.omg.org/spec/Commons/Text/",
     "csvw": "http://www.w3.org/ns/csvw#",
     "dc": "http://purl.org/dc/elements/1.1/",
-    "dcat": "http://www.w3.org/ns/dcat#",
-    "dcmitype": "http://purl.org/dc/dcmitype/",
-    "dcterms": "http://purl.org/dc/terms/",
     "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dct": "http://purl.org/dc/terms/",
+    "dctype": "http://purl.org/dc/dcmitype/",
     "doap": "http://usefulinc.com/ns/doap#",
+    "eli": "http://data.europa.eu/eli/ontology#",
+    "fibo-be-corp-corp": "https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/",
+    "fibo-be-ge-ge": "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/",
+    "fibo-be-le-cb": "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/",
+    "fibo-be-le-lp": "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/",
+    "fibo-be-nfp-nfp": "https://spec.edmcouncil.org/fibo/ontology/BE/NotForProfitOrganizations/NotForProfitOrganizations/",
+    "fibo-be-oac-cctl": "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/CorporateControl/",
+    "fibo-fbc-dae-dbt": "https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Debt/",
+    "fibo-fbc-pas-fpas": "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/",
+    "fibo-fnd-acc-cur": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/",
+    "fibo-fnd-agr-ctr": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/Contracts/",
+    "fibo-fnd-arr-doc": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Documents/",
+    "fibo-fnd-arr-lif": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Lifecycles/",
+    "fibo-fnd-dt-oc": "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/Occurrences/",
+    "fibo-fnd-org-org": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/Organizations/",
+    "fibo-fnd-pas-pas": "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/ProductsAndServices/",
+    "fibo-fnd-plc-adr": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Addresses/",
+    "fibo-fnd-plc-fac": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Facilities/",
+    "fibo-fnd-plc-loc": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Locations/",
+    "fibo-fnd-pty-pty": "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Parties/",
+    "fibo-fnd-rel-rel": "https://spec.edmcouncil.org/fibo/ontology/FND/Relations/Relations/",
+    "fibo-pay-ps-ps": "https://spec.edmcouncil.org/fibo/ontology/PAY/PaymentServices/PaymentServices/",
     "foaf": "http://xmlns.com/foaf/0.1/",
+    "gleif-L1": "https://www.gleif.org/ontology/L1/",
+    "gs1": "https://ref.gs1.org/voc/",
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "id": "@id",
+    "lcc-3166-1": "https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/",
+    "lcc-4217": "https://www.omg.org/spec/LCC/Countries/ISO4217-CurrencyCodes/",
+    "lcc-cr": "https://www.omg.org/spec/LCC/Countries/CountryRepresentation/",
+    "lcc-lr": "https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/",
+    "lrmoo": "http://iflastandards.info/ns/lrm/lrmoo/",
+    "mo": "http://purl.org/ontology/mo/",
     "odrl": "http://www.w3.org/ns/odrl/2/",
+    "og": "http://ogp.me/ns#",
     "org": "http://www.w3.org/ns/org#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "prof": "http://www.w3.org/ns/dx/prof/",
@@ -23,18 +60,22 @@
     "qb": "http://purl.org/linked-data/cube#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "sarif": "http://sarif.info/",
     "schema": "http://schema.org/",
     "sh": "http://www.w3.org/ns/shacl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
+    "snomed": "http://purl.bioontology.org/ontology/SNOMEDCT/",
     "sosa": "http://www.w3.org/ns/sosa/",
     "ssn": "http://www.w3.org/ns/ssn/",
     "time": "http://www.w3.org/2006/time#",
+    "type": "@type",
+    "unece": "http://unece.org/vocab#",
     "vann": "http://purl.org/vocab/vann/",
+    "vcard": "http://www.w3.org/2006/vcard/ns#",
     "void": "http://rdfs.org/ns/void#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
     "xml": "http://www.w3.org/XML/1998/namespace",
-    "dct": "http://purl.org/dc/terms/",
-    "dctype": "http://purl.org/dc/dcmitype/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
     "3DModel": {
       "@id": "schema:3DModel"
     },
@@ -241,6 +282,12 @@
     },
     "AudiobookFormat": {
       "@id": "schema:AudiobookFormat"
+    },
+    "Audiology": {
+      "@id": "schema:Audiology"
+    },
+    "AuthenticateAction": {
+      "@id": "schema:AuthenticateAction"
     },
     "AuthoritativeLegalValue": {
       "@id": "schema:AuthoritativeLegalValue"
@@ -734,6 +781,9 @@
     "ComputerStore": {
       "@id": "schema:ComputerStore"
     },
+    "ConferenceEvent": {
+      "@id": "schema:ConferenceEvent"
+    },
     "ConfirmAction": {
       "@id": "schema:ConfirmAction"
     },
@@ -773,6 +823,9 @@
     "CookAction": {
       "@id": "schema:CookAction"
     },
+    "Cooperative": {
+      "@id": "schema:Cooperative"
+    },
     "Corporation": {
       "@id": "schema:Corporation"
     },
@@ -809,6 +862,9 @@
     "CreativeWorkSeries": {
       "@id": "schema:CreativeWorkSeries"
     },
+    "Credential": {
+      "@id": "schema:Credential"
+    },
     "CreditCard": {
       "@id": "schema:CreditCard"
     },
@@ -829,6 +885,30 @@
     },
     "DDxElement": {
       "@id": "schema:DDxElement"
+    },
+    "DECooperativeCharity": {
+      "@id": "schema:DECooperativeCharity"
+    },
+    "DEFoundationCharity": {
+      "@id": "schema:DEFoundationCharity"
+    },
+    "DEJointStockCompanyCharity": {
+      "@id": "schema:DEJointStockCompanyCharity"
+    },
+    "DELimitedLiabilityCharity": {
+      "@id": "schema:DELimitedLiabilityCharity"
+    },
+    "DENonprofitType": {
+      "@id": "schema:DENonprofitType"
+    },
+    "DENotRegisteredAssociationCharity": {
+      "@id": "schema:DENotRegisteredAssociationCharity"
+    },
+    "DEPublicCharity": {
+      "@id": "schema:DEPublicCharity"
+    },
+    "DERegisteredAssociationCharity": {
+      "@id": "schema:DERegisteredAssociationCharity"
     },
     "DJMixAlbum": {
       "@id": "schema:DJMixAlbum"
@@ -886,6 +966,9 @@
     },
     "DeactivateAction": {
       "@id": "schema:DeactivateAction"
+    },
+    "DeclarationOfConformity": {
+      "@id": "schema:DeclarationOfConformity"
     },
     "DecontextualizedContent": {
       "@id": "schema:DecontextualizedContent"
@@ -997,6 +1080,9 @@
     },
     "DigitalPlatformEnumeration": {
       "@id": "schema:DigitalPlatformEnumeration"
+    },
+    "DigitalProductPassport": {
+      "@id": "schema:DigitalProductPassport"
     },
     "DirectDebit": {
       "@id": "schema:DirectDebit"
@@ -1226,8 +1312,14 @@
     "Enumeration": {
       "@id": "schema:Enumeration"
     },
+    "EnvironmentalProductDeclaration": {
+      "@id": "schema:EnvironmentalProductDeclaration"
+    },
     "Episode": {
       "@id": "schema:Episode"
+    },
+    "Error": {
+      "@id": "schema:Error"
     },
     "Event": {
       "@id": "schema:Event"
@@ -1337,6 +1429,9 @@
     "FilmAction": {
       "@id": "schema:FilmAction"
     },
+    "FinancialIncentive": {
+      "@id": "schema:FinancialIncentive"
+    },
     "FinancialProduct": {
       "@id": "schema:FinancialProduct"
     },
@@ -1393,6 +1488,24 @@
     },
     "FrontWheelDriveConfiguration": {
       "@id": "schema:FrontWheelDriveConfiguration"
+    },
+    "FulfillmentTypeCollectionPoint": {
+      "@id": "schema:FulfillmentTypeCollectionPoint"
+    },
+    "FulfillmentTypeDelivery": {
+      "@id": "schema:FulfillmentTypeDelivery"
+    },
+    "FulfillmentTypeEnumeration": {
+      "@id": "schema:FulfillmentTypeEnumeration"
+    },
+    "FulfillmentTypePickupDropoff": {
+      "@id": "schema:FulfillmentTypePickupDropoff"
+    },
+    "FulfillmentTypePickupInStore": {
+      "@id": "schema:FulfillmentTypePickupInStore"
+    },
+    "FulfillmentTypeScheduledDelivery": {
+      "@id": "schema:FulfillmentTypeScheduledDelivery"
     },
     "FullGameAvailability": {
       "@id": "schema:FullGameAvailability"
@@ -1519,6 +1632,9 @@
     },
     "Gynecologic": {
       "@id": "schema:Gynecologic"
+    },
+    "HTML": {
+      "@id": "rdf:HTML"
     },
     "HVACBusiness": {
       "@id": "schema:HVACBusiness"
@@ -1658,6 +1774,45 @@
     "IPTCDigitalSourceEnumeration": {
       "@id": "schema:IPTCDigitalSourceEnumeration"
     },
+    "ITAmateurSportsClubCharity": {
+      "@id": "schema:ITAmateurSportsClubCharity"
+    },
+    "ITAssociativeNetworkCharity": {
+      "@id": "schema:ITAssociativeNetworkCharity"
+    },
+    "ITCooperativeCharity": {
+      "@id": "schema:ITCooperativeCharity"
+    },
+    "ITMutualAidCharity": {
+      "@id": "schema:ITMutualAidCharity"
+    },
+    "ITNonprofitType": {
+      "@id": "schema:ITNonprofitType"
+    },
+    "ITOtherThirdSectorEntityCharity": {
+      "@id": "schema:ITOtherThirdSectorEntityCharity"
+    },
+    "ITPhilanthropicEntityCharity": {
+      "@id": "schema:ITPhilanthropicEntityCharity"
+    },
+    "ITSocialCompanyCharity": {
+      "@id": "schema:ITSocialCompanyCharity"
+    },
+    "ITSocialCooperativeCharity": {
+      "@id": "schema:ITSocialCooperativeCharity"
+    },
+    "ITSocialEnterpriseCharity": {
+      "@id": "schema:ITSocialEnterpriseCharity"
+    },
+    "ITSocialPromotionCharity": {
+      "@id": "schema:ITSocialPromotionCharity"
+    },
+    "ITSportCompanyCharity": {
+      "@id": "schema:ITSportCompanyCharity"
+    },
+    "ITVolunteerAssociationCharity": {
+      "@id": "schema:ITVolunteerAssociationCharity"
+    },
     "IceCreamShop": {
       "@id": "schema:IceCreamShop"
     },
@@ -1688,6 +1843,54 @@
     "InStorePrepay": {
       "@id": "schema:InStorePrepay"
     },
+    "IncentiveQualifiedExpenseType": {
+      "@id": "schema:IncentiveQualifiedExpenseType"
+    },
+    "IncentiveQualifiedExpenseTypeGoodsOnly": {
+      "@id": "schema:IncentiveQualifiedExpenseTypeGoodsOnly"
+    },
+    "IncentiveQualifiedExpenseTypeGoodsOrServices": {
+      "@id": "schema:IncentiveQualifiedExpenseTypeGoodsOrServices"
+    },
+    "IncentiveQualifiedExpenseTypeServicesOnly": {
+      "@id": "schema:IncentiveQualifiedExpenseTypeServicesOnly"
+    },
+    "IncentiveQualifiedExpenseTypeUtilityBill": {
+      "@id": "schema:IncentiveQualifiedExpenseTypeUtilityBill"
+    },
+    "IncentiveStatus": {
+      "@id": "schema:IncentiveStatus"
+    },
+    "IncentiveStatusActive": {
+      "@id": "schema:IncentiveStatusActive"
+    },
+    "IncentiveStatusInDevelopment": {
+      "@id": "schema:IncentiveStatusInDevelopment"
+    },
+    "IncentiveStatusOnHold": {
+      "@id": "schema:IncentiveStatusOnHold"
+    },
+    "IncentiveStatusRetired": {
+      "@id": "schema:IncentiveStatusRetired"
+    },
+    "IncentiveType": {
+      "@id": "schema:IncentiveType"
+    },
+    "IncentiveTypeLoan": {
+      "@id": "schema:IncentiveTypeLoan"
+    },
+    "IncentiveTypeRebateOrSubsidy": {
+      "@id": "schema:IncentiveTypeRebateOrSubsidy"
+    },
+    "IncentiveTypeTaxCredit": {
+      "@id": "schema:IncentiveTypeTaxCredit"
+    },
+    "IncentiveTypeTaxDeduction": {
+      "@id": "schema:IncentiveTypeTaxDeduction"
+    },
+    "IncentiveTypeTaxWaiver": {
+      "@id": "schema:IncentiveTypeTaxWaiver"
+    },
     "IndividualPhysician": {
       "@id": "schema:IndividualPhysician"
     },
@@ -1717,6 +1920,9 @@
     },
     "Installment": {
       "@id": "schema:Installment"
+    },
+    "InstantaneousEvent": {
+      "@id": "schema:InstantaneousEvent"
     },
     "InsuranceAgency": {
       "@id": "schema:InsuranceAgency"
@@ -1913,6 +2119,9 @@
     "LodgingReservation": {
       "@id": "schema:LodgingReservation"
     },
+    "LoginAction": {
+      "@id": "schema:LoginAction"
+    },
     "Longitudinal": {
       "@id": "schema:Longitudinal"
     },
@@ -1969,6 +2178,9 @@
     },
     "MaximumDoseSchedule": {
       "@id": "schema:MaximumDoseSchedule"
+    },
+    "MaximumRetailPrice": {
+      "@id": "schema:MaximumRetailPrice"
     },
     "MayTreatHealthAspect": {
       "@id": "schema:MayTreatHealthAspect"
@@ -2603,6 +2815,9 @@
     "OnlineFull": {
       "@id": "schema:OnlineFull"
     },
+    "OnlineMarketplace": {
+      "@id": "schema:OnlineMarketplace"
+    },
     "OnlineOnly": {
       "@id": "schema:OnlineOnly"
     },
@@ -2614,6 +2829,12 @@
     },
     "OpeningHoursSpecification": {
       "@id": "schema:OpeningHoursSpecification"
+    },
+    "OperatingSystem": {
+      "@id": "schema:OperatingSystem"
+    },
+    "Ophthalmology": {
+      "@id": "schema:Ophthalmology"
     },
     "OpinionNewsArticle": {
       "@id": "schema:OpinionNewsArticle"
@@ -2708,6 +2929,9 @@
     "PalliativeProcedure": {
       "@id": "schema:PalliativeProcedure"
     },
+    "Pamphlet": {
+      "@id": "schema:Pamphlet"
+    },
     "Paperback": {
       "@id": "schema:Paperback"
     },
@@ -2800,6 +3024,9 @@
     },
     "PerformanceRole": {
       "@id": "schema:PerformanceRole"
+    },
+    "PerformingArtsEvent": {
+      "@id": "schema:PerformingArtsEvent"
     },
     "PerformingArtsTheater": {
       "@id": "schema:PerformingArtsTheater"
@@ -3065,6 +3292,21 @@
     "Pulmonary": {
       "@id": "schema:Pulmonary"
     },
+    "PurchaseType": {
+      "@id": "schema:PurchaseType"
+    },
+    "PurchaseTypeLease": {
+      "@id": "schema:PurchaseTypeLease"
+    },
+    "PurchaseTypeNewPurchase": {
+      "@id": "schema:PurchaseTypeNewPurchase"
+    },
+    "PurchaseTypeTradeIn": {
+      "@id": "schema:PurchaseTypeTradeIn"
+    },
+    "PurchaseTypeUsedPurchase": {
+      "@id": "schema:PurchaseTypeUsedPurchase"
+    },
     "QAPage": {
       "@id": "schema:QAPage"
     },
@@ -3263,6 +3505,9 @@
     "Reservoir": {
       "@id": "schema:Reservoir"
     },
+    "ResetPasswordAction": {
+      "@id": "schema:ResetPasswordAction"
+    },
     "Residence": {
       "@id": "schema:Residence"
     },
@@ -3374,6 +3619,9 @@
     "RsvpResponseYes": {
       "@id": "schema:RsvpResponseYes"
     },
+    "RuntimePlatform": {
+      "@id": "schema:RuntimePlatform"
+    },
     "SRP": {
       "@id": "schema:SRP"
     },
@@ -3461,6 +3709,9 @@
     "SendAction": {
       "@id": "schema:SendAction"
     },
+    "SequentialArt": {
+      "@id": "schema:SequentialArt"
+    },
     "Series": {
       "@id": "schema:Series"
     },
@@ -3469,6 +3720,9 @@
     },
     "ServiceChannel": {
       "@id": "schema:ServiceChannel"
+    },
+    "ServicePeriod": {
+      "@id": "schema:ServicePeriod"
     },
     "SexualContentConsideration": {
       "@id": "schema:SexualContentConsideration"
@@ -3479,11 +3733,17 @@
     "SheetMusic": {
       "@id": "schema:SheetMusic"
     },
+    "ShippingConditions": {
+      "@id": "schema:ShippingConditions"
+    },
     "ShippingDeliveryTime": {
       "@id": "schema:ShippingDeliveryTime"
     },
     "ShippingRateSettings": {
       "@id": "schema:ShippingRateSettings"
+    },
+    "ShippingService": {
+      "@id": "schema:ShippingService"
     },
     "ShoeStore": {
       "@id": "schema:ShoeStore"
@@ -4344,8 +4604,7 @@
       "@id": "schema:accountablePerson"
     },
     "acquireLicensePage": {
-      "@id": "schema:acquireLicensePage",
-      "@type": "@id"
+      "@id": "schema:acquireLicensePage"
     },
     "acquiredFrom": {
       "@id": "schema:acquiredFrom"
@@ -4372,8 +4631,7 @@
       "@id": "schema:actionStatus"
     },
     "actionableFeedbackPolicy": {
-      "@id": "schema:actionableFeedbackPolicy",
-      "@type": "@id"
+      "@id": "schema:actionableFeedbackPolicy"
     },
     "activeIngredient": {
       "@id": "schema:activeIngredient"
@@ -4436,14 +4694,16 @@
       "@id": "schema:affiliation"
     },
     "afterMedia": {
-      "@id": "schema:afterMedia",
-      "@type": "@id"
+      "@id": "schema:afterMedia"
     },
     "agent": {
       "@id": "schema:agent"
     },
     "agentInteractionStatistic": {
       "@id": "schema:agentInteractionStatistic"
+    },
+    "aggregateElement": {
+      "@id": "schema:aggregateElement"
     },
     "aggregateRating": {
       "@id": "schema:aggregateRating"
@@ -4539,8 +4799,7 @@
       "@id": "schema:applicationDeadline"
     },
     "applicationStartDate": {
-      "@id": "schema:applicationStartDate",
-      "@type": "Date"
+      "@id": "schema:applicationStartDate"
     },
     "applicationSubCategory": {
       "@id": "schema:applicationSubCategory"
@@ -4558,8 +4817,7 @@
       "@id": "schema:archiveHeld"
     },
     "archivedAt": {
-      "@id": "schema:archivedAt",
-      "@type": "@id"
+      "@id": "schema:archivedAt"
     },
     "area": {
       "@id": "schema:area"
@@ -4640,8 +4898,7 @@
       "@id": "schema:associatedClaimReview"
     },
     "associatedDisease": {
-      "@id": "schema:associatedDisease",
-      "@type": "@id"
+      "@id": "schema:associatedDisease"
     },
     "associatedMedia": {
       "@id": "schema:associatedMedia"
@@ -4674,8 +4931,7 @@
       "@id": "schema:audio"
     },
     "auditDate": {
-      "@id": "schema:auditDate",
-      "@type": "Date"
+      "@id": "schema:auditDate"
     },
     "authenticator": {
       "@id": "schema:authenticator"
@@ -4683,16 +4939,17 @@
     "author": {
       "@id": "schema:author"
     },
+    "authorizedRepresentative": {
+      "@id": "schema:authorizedRepresentative"
+    },
     "availability": {
       "@id": "schema:availability"
     },
     "availabilityEnds": {
-      "@id": "schema:availabilityEnds",
-      "@type": "Date"
+      "@id": "schema:availabilityEnds"
     },
     "availabilityStarts": {
-      "@id": "schema:availabilityStarts",
-      "@type": "Date"
+      "@id": "schema:availabilityStarts"
     },
     "availableAtOrFrom": {
       "@id": "schema:availableAtOrFrom"
@@ -4752,8 +5009,7 @@
       "@id": "schema:bed"
     },
     "beforeMedia": {
-      "@id": "schema:beforeMedia",
-      "@type": "@id"
+      "@id": "schema:beforeMedia"
     },
     "beneficiaryBank": {
       "@id": "schema:beneficiaryBank"
@@ -4762,8 +5018,7 @@
       "@id": "schema:benefits"
     },
     "benefitsSummaryUrl": {
-      "@id": "schema:benefitsSummaryUrl",
-      "@type": "@id"
+      "@id": "schema:benefitsSummaryUrl"
     },
     "bestRating": {
       "@id": "schema:bestRating"
@@ -4796,8 +5051,7 @@
       "@id": "schema:biomechnicalClass"
     },
     "birthDate": {
-      "@id": "schema:birthDate",
-      "@type": "Date"
+      "@id": "schema:birthDate"
     },
     "birthPlace": {
       "@id": "schema:birthPlace"
@@ -4967,6 +5221,9 @@
     "category": {
       "@id": "schema:category"
     },
+    "cause": {
+      "@id": "schema:cause"
+    },
     "causeOf": {
       "@id": "schema:causeOf"
     },
@@ -5055,8 +5312,7 @@
       "@id": "schema:code"
     },
     "codeRepository": {
-      "@id": "schema:codeRepository",
-      "@type": "@id"
+      "@id": "schema:codeRepository"
     },
     "codeSampleType": {
       "@id": "schema:codeSampleType"
@@ -5068,8 +5324,7 @@
       "@id": "schema:codingSystem"
     },
     "colleague": {
-      "@id": "schema:colleague",
-      "@type": "@id"
+      "@id": "schema:colleague"
     },
     "colleagues": {
       "@id": "schema:colleagues"
@@ -5084,8 +5339,7 @@
       "@id": "schema:color"
     },
     "colorSwatch": {
-      "@id": "schema:colorSwatch",
-      "@type": "@id"
+      "@id": "schema:colorSwatch"
     },
     "colorist": {
       "@id": "schema:colorist"
@@ -5100,8 +5354,10 @@
       "@id": "schema:commentText"
     },
     "commentTime": {
-      "@id": "schema:commentTime",
-      "@type": "Date"
+      "@id": "schema:commentTime"
+    },
+    "companyRegistration": {
+      "@id": "schema:companyRegistration"
     },
     "competencyRequired": {
       "@id": "schema:competencyRequired"
@@ -5125,8 +5381,10 @@
       "@id": "schema:connectedTo"
     },
     "constraintProperty": {
-      "@id": "schema:constraintProperty",
-      "@type": "@id"
+      "@id": "schema:constraintProperty"
+    },
+    "consumerNotice": {
+      "@id": "schema:consumerNotice"
     },
     "contactOption": {
       "@id": "schema:contactOption"
@@ -5171,8 +5429,7 @@
       "@id": "schema:contentType"
     },
     "contentUrl": {
-      "@id": "schema:contentUrl",
-      "@type": "@id"
+      "@id": "schema:contentUrl"
     },
     "contraindication": {
       "@id": "schema:contraindication"
@@ -5199,8 +5456,7 @@
       "@id": "schema:correction"
     },
     "correctionsPolicy": {
-      "@id": "schema:correctionsPolicy",
-      "@type": "@id"
+      "@id": "schema:correctionsPolicy"
     },
     "costCategory": {
       "@id": "schema:costCategory"
@@ -5343,6 +5599,9 @@
     "cvdNumVentUse": {
       "@id": "schema:cvdNumVentUse"
     },
+    "data": {
+      "@id": "schema:data"
+    },
     "dataFeedElement": {
       "@id": "schema:dataFeedElement"
     },
@@ -5353,32 +5612,25 @@
       "@id": "schema:datasetTimeInterval"
     },
     "dateCreated": {
-      "@id": "schema:dateCreated",
-      "@type": "Date"
+      "@id": "schema:dateCreated"
     },
     "dateDeleted": {
-      "@id": "schema:dateDeleted",
-      "@type": "Date"
+      "@id": "schema:dateDeleted"
     },
     "dateIssued": {
-      "@id": "schema:dateIssued",
-      "@type": "Date"
+      "@id": "schema:dateIssued"
     },
     "dateModified": {
-      "@id": "schema:dateModified",
-      "@type": "Date"
+      "@id": "schema:dateModified"
     },
     "datePosted": {
-      "@id": "schema:datePosted",
-      "@type": "Date"
+      "@id": "schema:datePosted"
     },
     "datePublished": {
-      "@id": "schema:datePublished",
-      "@type": "Date"
+      "@id": "schema:datePublished"
     },
     "dateRead": {
-      "@id": "schema:dateRead",
-      "@type": "Date"
+      "@id": "schema:dateRead"
     },
     "dateReceived": {
       "@id": "schema:dateReceived"
@@ -5387,8 +5639,7 @@
       "@id": "schema:dateSent"
     },
     "dateVehicleFirstRegistered": {
-      "@id": "schema:dateVehicleFirstRegistered",
-      "@type": "Date"
+      "@id": "schema:dateVehicleFirstRegistered"
     },
     "dateline": {
       "@id": "schema:dateline"
@@ -5397,8 +5648,7 @@
       "@id": "schema:dayOfWeek"
     },
     "deathDate": {
-      "@id": "schema:deathDate",
-      "@type": "Date"
+      "@id": "schema:deathDate"
     },
     "deathPlace": {
       "@id": "schema:deathPlace"
@@ -5503,20 +5753,19 @@
       "@id": "schema:discusses"
     },
     "discussionUrl": {
-      "@id": "schema:discussionUrl",
-      "@type": "@id"
+      "@id": "schema:discussionUrl"
     },
     "diseasePreventionInfo": {
-      "@id": "schema:diseasePreventionInfo",
-      "@type": "@id"
+      "@id": "schema:diseasePreventionInfo"
     },
     "diseaseSpreadStatistics": {
-      "@id": "schema:diseaseSpreadStatistics",
-      "@type": "@id"
+      "@id": "schema:diseaseSpreadStatistics"
+    },
+    "displayLocation": {
+      "@id": "schema:displayLocation"
     },
     "dissolutionDate": {
-      "@id": "schema:dissolutionDate",
-      "@type": "Date"
+      "@id": "schema:dissolutionDate"
     },
     "distance": {
       "@id": "schema:distance"
@@ -5528,16 +5777,13 @@
       "@id": "schema:distribution"
     },
     "diversityPolicy": {
-      "@id": "schema:diversityPolicy",
-      "@type": "@id"
+      "@id": "schema:diversityPolicy"
     },
     "diversityStaffingReport": {
-      "@id": "schema:diversityStaffingReport",
-      "@type": "@id"
+      "@id": "schema:diversityStaffingReport"
     },
     "documentation": {
-      "@id": "schema:documentation",
-      "@type": "@id"
+      "@id": "schema:documentation"
     },
     "doesNotShip": {
       "@id": "schema:doesNotShip"
@@ -5567,8 +5813,7 @@
       "@id": "schema:downPayment"
     },
     "downloadUrl": {
-      "@id": "schema:downloadUrl",
-      "@type": "@id"
+      "@id": "schema:downloadUrl"
     },
     "downvoteCount": {
       "@id": "schema:downvoteCount"
@@ -5607,8 +5852,7 @@
       "@id": "schema:durationOfWarranty"
     },
     "duringMedia": {
-      "@id": "schema:duringMedia",
-      "@type": "@id"
+      "@id": "schema:duringMedia"
     },
     "earlyPrepaymentPenalty": {
       "@id": "schema:earlyPrepaymentPenalty"
@@ -5667,12 +5911,14 @@
     "eligibleTransactionVolume": {
       "@id": "schema:eligibleTransactionVolume"
     },
+    "eligibleWithSupplier": {
+      "@id": "schema:eligibleWithSupplier"
+    },
     "email": {
       "@id": "schema:email"
     },
     "embedUrl": {
-      "@id": "schema:embedUrl",
-      "@type": "@id"
+      "@id": "schema:embedUrl"
     },
     "embeddedTextCaption": {
       "@id": "schema:embeddedTextCaption"
@@ -5714,8 +5960,7 @@
       "@id": "schema:encodings"
     },
     "endDate": {
-      "@id": "schema:endDate",
-      "@type": "Date"
+      "@id": "schema:endDate"
     },
     "endOffset": {
       "@id": "schema:endOffset"
@@ -5765,6 +6010,9 @@
     "error": {
       "@id": "schema:error"
     },
+    "errorCode": {
+      "@id": "schema:errorCode"
+    },
     "estimatedCost": {
       "@id": "schema:estimatedCost"
     },
@@ -5778,8 +6026,7 @@
       "@id": "schema:estimatesRiskOf"
     },
     "ethicsPolicy": {
-      "@id": "schema:ethicsPolicy",
-      "@type": "@id"
+      "@id": "schema:ethicsPolicy"
     },
     "event": {
       "@id": "schema:event"
@@ -5806,8 +6053,7 @@
       "@id": "schema:exampleOfWork"
     },
     "exceptDate": {
-      "@id": "schema:exceptDate",
-      "@type": "Date"
+      "@id": "schema:exceptDate"
     },
     "exchangeRateSpread": {
       "@id": "schema:exchangeRateSpread"
@@ -5831,12 +6077,10 @@
       "@id": "schema:exifData"
     },
     "expectedArrivalFrom": {
-      "@id": "schema:expectedArrivalFrom",
-      "@type": "Date"
+      "@id": "schema:expectedArrivalFrom"
     },
     "expectedArrivalUntil": {
-      "@id": "schema:expectedArrivalUntil",
-      "@type": "Date"
+      "@id": "schema:expectedArrivalUntil"
     },
     "expectedPrognosis": {
       "@id": "schema:expectedPrognosis"
@@ -5854,11 +6098,13 @@
       "@id": "schema:expertConsiderations"
     },
     "expires": {
-      "@id": "schema:expires",
-      "@type": "Date"
+      "@id": "schema:expires"
     },
     "expressedIn": {
       "@id": "schema:expressedIn"
+    },
+    "extendedAddress": {
+      "@id": "schema:extendedAddress"
     },
     "familyName": {
       "@id": "schema:familyName"
@@ -5933,8 +6179,7 @@
       "@id": "schema:founders"
     },
     "foundingDate": {
-      "@id": "schema:foundingDate",
-      "@type": "Date"
+      "@id": "schema:foundingDate"
     },
     "foundingLocation": {
       "@id": "schema:foundingLocation"
@@ -5963,6 +6208,9 @@
     "fuelType": {
       "@id": "schema:fuelType"
     },
+    "fulfillmentType": {
+      "@id": "schema:fulfillmentType"
+    },
     "functionalClass": {
       "@id": "schema:functionalClass"
     },
@@ -5988,8 +6236,7 @@
       "@id": "schema:gameItem"
     },
     "gameLocation": {
-      "@id": "schema:gameLocation",
-      "@type": "@id"
+      "@id": "schema:gameLocation"
     },
     "gamePlatform": {
       "@id": "schema:gamePlatform"
@@ -6049,8 +6296,7 @@
       "@id": "schema:geographicArea"
     },
     "gettingTestedInfo": {
-      "@id": "schema:gettingTestedInfo",
-      "@type": "@id"
+      "@id": "schema:gettingTestedInfo"
     },
     "givenName": {
       "@id": "schema:givenName"
@@ -6092,8 +6338,7 @@
       "@id": "schema:guideline"
     },
     "guidelineDate": {
-      "@id": "schema:guidelineDate",
-      "@type": "Date"
+      "@id": "schema:guidelineDate"
     },
     "guidelineSubject": {
       "@id": "schema:guidelineSubject"
@@ -6137,6 +6382,9 @@
     "hasDigitalDocumentPermission": {
       "@id": "schema:hasDigitalDocumentPermission"
     },
+    "hasDigitalProductPassport": {
+      "@id": "schema:hasDigitalProductPassport"
+    },
     "hasDriveThroughService": {
       "@id": "schema:hasDriveThroughService"
     },
@@ -6147,15 +6395,13 @@
       "@id": "schema:hasEnergyEfficiencyCategory"
     },
     "hasGS1DigitalLink": {
-      "@id": "schema:hasGS1DigitalLink",
-      "@type": "@id"
+      "@id": "schema:hasGS1DigitalLink"
     },
     "hasHealthAspect": {
       "@id": "schema:hasHealthAspect"
     },
     "hasMap": {
-      "@id": "schema:hasMap",
-      "@type": "@id"
+      "@id": "schema:hasMap"
     },
     "hasMeasurement": {
       "@id": "schema:hasMeasurement"
@@ -6176,8 +6422,7 @@
       "@id": "schema:hasMerchantReturnPolicy"
     },
     "hasMolecularFunction": {
-      "@id": "schema:hasMolecularFunction",
-      "@type": "@id"
+      "@id": "schema:hasMolecularFunction"
     },
     "hasOccupation": {
       "@id": "schema:hasOccupation"
@@ -6191,11 +6436,23 @@
     "hasPart": {
       "@id": "schema:hasPart"
     },
+    "hasParticipationOffer": {
+      "@id": "schema:hasParticipationOffer"
+    },
     "hasProductReturnPolicy": {
       "@id": "schema:hasProductReturnPolicy"
     },
     "hasRepresentation": {
       "@id": "schema:hasRepresentation"
+    },
+    "hasShippingService": {
+      "@id": "schema:hasShippingService"
+    },
+    "hasSponsorshipOffer": {
+      "@id": "schema:hasSponsorshipOffer"
+    },
+    "hasStore": {
+      "@id": "schema:hasStore"
     },
     "hasTierBenefit": {
       "@id": "schema:hasTierBenefit"
@@ -6240,8 +6497,7 @@
       "@id": "schema:healthPlanId"
     },
     "healthPlanMarketingUrl": {
-      "@id": "schema:healthPlanMarketingUrl",
-      "@type": "@id"
+      "@id": "schema:healthPlanMarketingUrl"
     },
     "healthPlanNetworkId": {
       "@id": "schema:healthPlanNetworkId"
@@ -6313,11 +6569,13 @@
       "@id": "schema:illustrator"
     },
     "image": {
-      "@id": "schema:image",
-      "@type": "@id"
+      "@id": "schema:image"
     },
     "imagingTechnique": {
       "@id": "schema:imagingTechnique"
+    },
+    "importer": {
+      "@id": "schema:importer"
     },
     "inAlbum": {
       "@id": "schema:inAlbum"
@@ -6332,12 +6590,10 @@
       "@id": "schema:inChIKey"
     },
     "inCodeSet": {
-      "@id": "schema:inCodeSet",
-      "@type": "@id"
+      "@id": "schema:inCodeSet"
     },
     "inDefinedTermSet": {
-      "@id": "schema:inDefinedTermSet",
-      "@type": "@id"
+      "@id": "schema:inDefinedTermSet"
     },
     "inLanguage": {
       "@id": "schema:inLanguage"
@@ -6354,11 +6610,23 @@
     "inSupportOf": {
       "@id": "schema:inSupportOf"
     },
+    "incentiveAmount": {
+      "@id": "schema:incentiveAmount"
+    },
     "incentiveCompensation": {
       "@id": "schema:incentiveCompensation"
     },
+    "incentiveStatus": {
+      "@id": "schema:incentiveStatus"
+    },
+    "incentiveType": {
+      "@id": "schema:incentiveType"
+    },
     "incentives": {
       "@id": "schema:incentives"
+    },
+    "incentivizedItem": {
+      "@id": "schema:incentivizedItem"
     },
     "includedComposition": {
       "@id": "schema:includedComposition"
@@ -6387,6 +6655,9 @@
     "includesObject": {
       "@id": "schema:includesObject"
     },
+    "incomeLimit": {
+      "@id": "schema:incomeLimit"
+    },
     "increasesRiskOf": {
       "@id": "schema:increasesRiskOf"
     },
@@ -6412,8 +6683,7 @@
       "@id": "schema:insertion"
     },
     "installUrl": {
-      "@id": "schema:installUrl",
-      "@type": "@id"
+      "@id": "schema:installUrl"
     },
     "instructor": {
       "@id": "schema:instructor"
@@ -6467,12 +6737,10 @@
       "@id": "schema:isAvailableGenerically"
     },
     "isBasedOn": {
-      "@id": "schema:isBasedOn",
-      "@type": "@id"
+      "@id": "schema:isBasedOn"
     },
     "isBasedOnUrl": {
-      "@id": "schema:isBasedOnUrl",
-      "@type": "@id"
+      "@id": "schema:isBasedOnUrl"
     },
     "isConsumableFor": {
       "@id": "schema:isConsumableFor"
@@ -6487,19 +6755,19 @@
       "@id": "schema:isGift"
     },
     "isInvolvedInBiologicalProcess": {
-      "@id": "schema:isInvolvedInBiologicalProcess",
-      "@type": "@id"
+      "@id": "schema:isInvolvedInBiologicalProcess"
     },
     "isLiveBroadcast": {
       "@id": "schema:isLiveBroadcast"
     },
     "isLocatedInSubcellularLocation": {
-      "@id": "schema:isLocatedInSubcellularLocation",
-      "@type": "@id"
+      "@id": "schema:isLocatedInSubcellularLocation"
+    },
+    "isOftenBoughtWith": {
+      "@id": "schema:isOftenBoughtWith"
     },
     "isPartOf": {
-      "@id": "schema:isPartOf",
-      "@type": "@id"
+      "@id": "schema:isPartOf"
     },
     "isPartOfBioChemEntity": {
       "@id": "schema:isPartOfBioChemEntity"
@@ -6518,6 +6786,9 @@
     },
     "isSimilarTo": {
       "@id": "schema:isSimilarTo"
+    },
+    "isStoreOn": {
+      "@id": "schema:isStoreOn"
     },
     "isTierOf": {
       "@id": "schema:isTierOf"
@@ -6582,6 +6853,9 @@
     "itemOffered": {
       "@id": "schema:itemOffered"
     },
+    "itemPopularity": {
+      "@id": "schema:itemPopularity"
+    },
     "itemReviewed": {
       "@id": "schema:itemReviewed"
     },
@@ -6596,6 +6870,9 @@
     },
     "jobBenefits": {
       "@id": "schema:jobBenefits"
+    },
+    "jobDuration": {
+      "@id": "schema:jobDuration"
     },
     "jobImmediateStart": {
       "@id": "schema:jobImmediateStart"
@@ -6631,8 +6908,7 @@
       "@id": "schema:knowsLanguage"
     },
     "labelDetails": {
-      "@id": "schema:labelDetails",
-      "@type": "@id"
+      "@id": "schema:labelDetails"
     },
     "landlord": {
       "@id": "schema:landlord"
@@ -6641,15 +6917,13 @@
       "@id": "schema:language"
     },
     "lastReviewed": {
-      "@id": "schema:lastReviewed",
-      "@type": "Date"
+      "@id": "schema:lastReviewed"
     },
     "latitude": {
       "@id": "schema:latitude"
     },
     "layoutImage": {
-      "@id": "schema:layoutImage",
-      "@type": "@id"
+      "@id": "schema:layoutImage"
     },
     "learningResourceType": {
       "@id": "schema:learningResourceType"
@@ -6657,11 +6931,20 @@
     "leaseLength": {
       "@id": "schema:leaseLength"
     },
+    "legalAddress": {
+      "@id": "schema:legalAddress"
+    },
     "legalName": {
       "@id": "schema:legalName"
     },
+    "legalRepresentative": {
+      "@id": "schema:legalRepresentative"
+    },
     "legalStatus": {
       "@id": "schema:legalStatus"
+    },
+    "legislationAmends": {
+      "@id": "schema:legislationAmends"
     },
     "legislationApplies": {
       "@id": "schema:legislationApplies"
@@ -6669,16 +6952,29 @@
     "legislationChanges": {
       "@id": "schema:legislationChanges"
     },
+    "legislationCommences": {
+      "@id": "schema:legislationCommences"
+    },
     "legislationConsolidates": {
       "@id": "schema:legislationConsolidates"
     },
+    "legislationCorrects": {
+      "@id": "schema:legislationCorrects"
+    },
+    "legislationCountersignedBy": {
+      "@id": "schema:legislationCountersignedBy"
+    },
     "legislationDate": {
-      "@id": "schema:legislationDate",
-      "@type": "Date"
+      "@id": "schema:legislationDate"
+    },
+    "legislationDateOfApplicability": {
+      "@id": "schema:legislationDateOfApplicability"
     },
     "legislationDateVersion": {
-      "@id": "schema:legislationDateVersion",
-      "@type": "Date"
+      "@id": "schema:legislationDateVersion"
+    },
+    "legislationEnsuresImplementationOf": {
+      "@id": "schema:legislationEnsuresImplementationOf"
     },
     "legislationIdentifier": {
       "@id": "schema:legislationIdentifier"
@@ -6694,6 +6990,9 @@
     },
     "legislationPassedBy": {
       "@id": "schema:legislationPassedBy"
+    },
+    "legislationRepeals": {
+      "@id": "schema:legislationRepeals"
     },
     "legislationResponsible": {
       "@id": "schema:legislationResponsible"
@@ -6720,8 +7019,10 @@
       "@id": "schema:letterer"
     },
     "license": {
-      "@id": "schema:license",
-      "@type": "@id"
+      "@id": "schema:license"
+    },
+    "lifeEvent": {
+      "@id": "schema:lifeEvent"
     },
     "line": {
       "@id": "schema:line"
@@ -6763,8 +7064,7 @@
       "@id": "schema:lodgingUnitType"
     },
     "logo": {
-      "@id": "schema:logo",
-      "@type": "@id"
+      "@id": "schema:logo"
     },
     "longitude": {
       "@id": "schema:longitude"
@@ -6788,8 +7088,7 @@
       "@id": "schema:mainEntity"
     },
     "mainEntityOfPage": {
-      "@id": "schema:mainEntityOfPage",
-      "@type": "@id"
+      "@id": "schema:mainEntityOfPage"
     },
     "maintainer": {
       "@id": "schema:maintainer"
@@ -6801,22 +7100,19 @@
       "@id": "schema:manufacturer"
     },
     "map": {
-      "@id": "schema:map",
-      "@type": "@id"
+      "@id": "schema:map"
     },
     "mapType": {
       "@id": "schema:mapType"
     },
     "maps": {
-      "@id": "schema:maps",
-      "@type": "@id"
+      "@id": "schema:maps"
     },
     "marginOfError": {
       "@id": "schema:marginOfError"
     },
     "masthead": {
-      "@id": "schema:masthead",
-      "@type": "@id"
+      "@id": "schema:masthead"
     },
     "material": {
       "@id": "schema:material"
@@ -6921,12 +7217,10 @@
       "@id": "schema:merchant"
     },
     "merchantReturnDays": {
-      "@id": "schema:merchantReturnDays",
-      "@type": "Date"
+      "@id": "schema:merchantReturnDays"
     },
     "merchantReturnLink": {
-      "@id": "schema:merchantReturnLink",
-      "@type": "@id"
+      "@id": "schema:merchantReturnLink"
     },
     "messageAttachment": {
       "@id": "schema:messageAttachment"
@@ -6940,12 +7234,14 @@
     "minValue": {
       "@id": "schema:minValue"
     },
+    "minimumOrderValue": {
+      "@id": "schema:minimumOrderValue"
+    },
     "minimumPaymentDue": {
       "@id": "schema:minimumPaymentDue"
     },
     "missionCoveragePrioritiesPolicy": {
-      "@id": "schema:missionCoveragePrioritiesPolicy",
-      "@type": "@id"
+      "@id": "schema:missionCoveragePrioritiesPolicy"
     },
     "mobileUrl": {
       "@id": "schema:mobileUrl"
@@ -6954,8 +7250,7 @@
       "@id": "schema:model"
     },
     "modelDate": {
-      "@id": "schema:modelDate",
-      "@type": "Date"
+      "@id": "schema:modelDate"
     },
     "modifiedTime": {
       "@id": "schema:modifiedTime"
@@ -7030,15 +7325,13 @@
       "@id": "schema:netWorth"
     },
     "newsUpdatesAndGuidelines": {
-      "@id": "schema:newsUpdatesAndGuidelines",
-      "@type": "@id"
+      "@id": "schema:newsUpdatesAndGuidelines"
     },
     "nextItem": {
       "@id": "schema:nextItem"
     },
     "noBylinesPolicy": {
-      "@id": "schema:noBylinesPolicy",
-      "@type": "@id"
+      "@id": "schema:noBylinesPolicy"
     },
     "nonEqual": {
       "@id": "schema:nonEqual"
@@ -7063,6 +7356,9 @@
     },
     "numConstraints": {
       "@id": "schema:numConstraints"
+    },
+    "numItems": {
+      "@id": "schema:numItems"
     },
     "numTracks": {
       "@id": "schema:numTracks"
@@ -7191,8 +7487,7 @@
       "@id": "schema:option"
     },
     "orderDate": {
-      "@id": "schema:orderDate",
-      "@type": "Date"
+      "@id": "schema:orderDate"
     },
     "orderDelivery": {
       "@id": "schema:orderDelivery"
@@ -7206,11 +7501,17 @@
     "orderNumber": {
       "@id": "schema:orderNumber"
     },
+    "orderPercentage": {
+      "@id": "schema:orderPercentage"
+    },
     "orderQuantity": {
       "@id": "schema:orderQuantity"
     },
     "orderStatus": {
       "@id": "schema:orderStatus"
+    },
+    "orderValue": {
+      "@id": "schema:orderValue"
     },
     "orderedItem": {
       "@id": "schema:orderedItem"
@@ -7225,8 +7526,7 @@
       "@id": "schema:originalMediaContextDescription"
     },
     "originalMediaLink": {
-      "@id": "schema:originalMediaLink",
-      "@type": "@id"
+      "@id": "schema:originalMediaLink"
     },
     "originatesFrom": {
       "@id": "schema:originatesFrom"
@@ -7239,6 +7539,9 @@
     },
     "ownedThrough": {
       "@id": "schema:ownedThrough"
+    },
+    "owner": {
+      "@id": "schema:owner"
     },
     "ownershipFundingInfo": {
       "@id": "schema:ownershipFundingInfo"
@@ -7325,8 +7628,7 @@
       "@id": "schema:paymentDue"
     },
     "paymentDueDate": {
-      "@id": "schema:paymentDueDate",
-      "@type": "Date"
+      "@id": "schema:paymentDueDate"
     },
     "paymentMethod": {
       "@id": "schema:paymentMethod"
@@ -7341,8 +7643,7 @@
       "@id": "schema:paymentStatus"
     },
     "paymentUrl": {
-      "@id": "schema:paymentUrl",
-      "@type": "@id"
+      "@id": "schema:paymentUrl"
     },
     "penciler": {
       "@id": "schema:penciler"
@@ -7483,8 +7784,7 @@
       "@id": "schema:preparation"
     },
     "prescribingInfo": {
-      "@id": "schema:prescribingInfo",
-      "@type": "@id"
+      "@id": "schema:prescribingInfo"
     },
     "prescriptionStatus": {
       "@id": "schema:prescriptionStatus"
@@ -7493,8 +7793,7 @@
       "@id": "schema:previousItem"
     },
     "previousStartDate": {
-      "@id": "schema:previousStartDate",
-      "@type": "Date"
+      "@id": "schema:previousStartDate"
     },
     "price": {
       "@id": "schema:price"
@@ -7518,8 +7817,7 @@
       "@id": "schema:priceType"
     },
     "priceValidUntil": {
-      "@id": "schema:priceValidUntil",
-      "@type": "Date"
+      "@id": "schema:priceValidUntil"
     },
     "primaryImageOfPage": {
       "@id": "schema:primaryImageOfPage"
@@ -7567,8 +7865,7 @@
       "@id": "schema:productReturnDays"
     },
     "productReturnLink": {
-      "@id": "schema:productReturnLink",
-      "@type": "@id"
+      "@id": "schema:productReturnLink"
     },
     "productSupported": {
       "@id": "schema:productSupported"
@@ -7577,8 +7874,7 @@
       "@id": "schema:productionCompany"
     },
     "productionDate": {
-      "@id": "schema:productionDate",
-      "@type": "Date"
+      "@id": "schema:productionDate"
     },
     "proficiencyLevel": {
       "@id": "schema:proficiencyLevel"
@@ -7603,6 +7899,9 @@
     },
     "programmingModel": {
       "@id": "schema:programmingModel"
+    },
+    "pronouns": {
+      "@id": "schema:pronouns"
     },
     "propertyID": {
       "@id": "schema:propertyID"
@@ -7629,8 +7928,7 @@
       "@id": "schema:publicAccess"
     },
     "publicTransportClosuresInfo": {
-      "@id": "schema:publicTransportClosuresInfo",
-      "@type": "@id"
+      "@id": "schema:publicTransportClosuresInfo"
     },
     "publication": {
       "@id": "schema:publication"
@@ -7651,19 +7949,25 @@
       "@id": "schema:publisherImprint"
     },
     "publishingPrinciples": {
-      "@id": "schema:publishingPrinciples",
-      "@type": "@id"
+      "@id": "schema:publishingPrinciples"
     },
     "purchaseDate": {
-      "@id": "schema:purchaseDate",
-      "@type": "Date"
+      "@id": "schema:purchaseDate"
+    },
+    "purchasePriceLimit": {
+      "@id": "schema:purchasePriceLimit"
+    },
+    "purchaseType": {
+      "@id": "schema:purchaseType"
     },
     "qualifications": {
       "@id": "schema:qualifications"
     },
+    "qualifiedExpense": {
+      "@id": "schema:qualifiedExpense"
+    },
     "quarantineGuidelines": {
-      "@id": "schema:quarantineGuidelines",
-      "@type": "@id"
+      "@id": "schema:quarantineGuidelines"
     },
     "query": {
       "@id": "schema:query"
@@ -7746,6 +8050,12 @@
     "recourseLoan": {
       "@id": "schema:recourseLoan"
     },
+    "recycledContentPercentage": {
+      "@id": "schema:recycledContentPercentage"
+    },
+    "referee": {
+      "@id": "schema:referee"
+    },
     "referenceQuantity": {
       "@id": "schema:referenceQuantity"
     },
@@ -7771,8 +8081,7 @@
       "@id": "schema:relatedDrug"
     },
     "relatedLink": {
-      "@id": "schema:relatedLink",
-      "@type": "@id"
+      "@id": "schema:relatedLink"
     },
     "relatedStructure": {
       "@id": "schema:relatedStructure"
@@ -7784,8 +8093,7 @@
       "@id": "schema:relatedTo"
     },
     "releaseDate": {
-      "@id": "schema:releaseDate",
-      "@type": "Date"
+      "@id": "schema:releaseDate"
     },
     "releaseNotes": {
       "@id": "schema:releaseNotes"
@@ -7824,8 +8132,7 @@
       "@id": "schema:replacer"
     },
     "replyToUrl": {
-      "@id": "schema:replyToUrl",
-      "@type": "@id"
+      "@id": "schema:replyToUrl"
     },
     "reportNumber": {
       "@id": "schema:reportNumber"
@@ -7963,8 +8270,7 @@
       "@id": "schema:salaryUponCompletion"
     },
     "sameAs": {
-      "@id": "schema:sameAs",
-      "@type": "@id"
+      "@id": "schema:sameAs"
     },
     "sampleType": {
       "@id": "schema:sampleType"
@@ -7976,44 +8282,40 @@
       "@id": "schema:scheduleTimezone"
     },
     "scheduledPaymentDate": {
-      "@id": "schema:scheduledPaymentDate",
-      "@type": "Date"
+      "@id": "schema:scheduledPaymentDate"
     },
     "scheduledTime": {
-      "@id": "schema:scheduledTime",
-      "@type": "Date"
+      "@id": "schema:scheduledTime"
     },
     "schemaVersion": {
       "@id": "schema:schemaVersion"
     },
     "schoolClosuresInfo": {
-      "@id": "schema:schoolClosuresInfo",
-      "@type": "@id"
+      "@id": "schema:schoolClosuresInfo"
     },
     "screenCount": {
       "@id": "schema:screenCount"
     },
     "screenshot": {
-      "@id": "schema:screenshot",
-      "@type": "@id"
+      "@id": "schema:screenshot"
     },
     "sdDatePublished": {
-      "@id": "schema:sdDatePublished",
-      "@type": "Date"
+      "@id": "schema:sdDatePublished"
     },
     "sdLicense": {
-      "@id": "schema:sdLicense",
-      "@type": "@id"
+      "@id": "schema:sdLicense"
     },
     "sdPublisher": {
       "@id": "schema:sdPublisher"
     },
     "season": {
-      "@id": "schema:season",
-      "@type": "@id"
+      "@id": "schema:season"
     },
     "seasonNumber": {
       "@id": "schema:seasonNumber"
+    },
+    "seasonalOverride": {
+      "@id": "schema:seasonalOverride"
     },
     "seasons": {
       "@id": "schema:seasons"
@@ -8097,8 +8399,7 @@
       "@id": "schema:serviceType"
     },
     "serviceUrl": {
-      "@id": "schema:serviceUrl",
-      "@type": "@id"
+      "@id": "schema:serviceUrl"
     },
     "servingSize": {
       "@id": "schema:servingSize"
@@ -8108,6 +8409,9 @@
     },
     "sharedContent": {
       "@id": "schema:sharedContent"
+    },
+    "shippingConditions": {
+      "@id": "schema:shippingConditions"
     },
     "shippingDestination": {
       "@id": "schema:shippingDestination"
@@ -8125,8 +8429,7 @@
       "@id": "schema:shippingRate"
     },
     "shippingSettingsLink": {
-      "@id": "schema:shippingSettingsLink",
-      "@type": "@id"
+      "@id": "schema:shippingSettingsLink"
     },
     "sibling": {
       "@id": "schema:sibling"
@@ -8144,12 +8447,10 @@
       "@id": "schema:significance"
     },
     "significantLink": {
-      "@id": "schema:significantLink",
-      "@type": "@id"
+      "@id": "schema:significantLink"
     },
     "significantLinks": {
-      "@id": "schema:significantLinks",
-      "@type": "@id"
+      "@id": "schema:significantLinks"
     },
     "size": {
       "@id": "schema:size"
@@ -8190,6 +8491,9 @@
     "softwareVersion": {
       "@id": "schema:softwareVersion"
     },
+    "source": {
+      "@id": "schema:source"
+    },
     "sourceOrganization": {
       "@id": "schema:sourceOrganization"
     },
@@ -8203,8 +8507,7 @@
       "@id": "schema:spatialCoverage"
     },
     "speakable": {
-      "@id": "schema:speakable",
-      "@type": "@id"
+      "@id": "schema:speakable"
     },
     "specialCommitments": {
       "@id": "schema:specialCommitments"
@@ -8214,6 +8517,9 @@
     },
     "specialty": {
       "@id": "schema:specialty"
+    },
+    "specification": {
+      "@id": "schema:specification"
     },
     "speechToTextMarkup": {
       "@id": "schema:speechToTextMarkup"
@@ -8252,8 +8558,7 @@
       "@id": "schema:starRating"
     },
     "startDate": {
-      "@id": "schema:startDate",
-      "@type": "Date"
+      "@id": "schema:startDate"
     },
     "startOffset": {
       "@id": "schema:startOffset"
@@ -8336,6 +8641,9 @@
     "subjectOf": {
       "@id": "schema:subjectOf"
     },
+    "substanceOfConcern": {
+      "@id": "schema:substanceOfConcern"
+    },
     "subtitleLanguage": {
       "@id": "schema:subtitleLanguage"
     },
@@ -8388,8 +8696,7 @@
       "@id": "schema:syllabusSections"
     },
     "target": {
-      "@id": "schema:target",
-      "@type": "@id"
+      "@id": "schema:target"
     },
     "targetCollection": {
       "@id": "schema:targetCollection"
@@ -8410,8 +8717,7 @@
       "@id": "schema:targetProduct"
     },
     "targetUrl": {
-      "@id": "schema:targetUrl",
-      "@type": "@id"
+      "@id": "schema:targetUrl"
     },
     "taxID": {
       "@id": "schema:taxID"
@@ -8456,8 +8762,7 @@
       "@id": "schema:thumbnail"
     },
     "thumbnailUrl": {
-      "@id": "schema:thumbnailUrl",
-      "@type": "@id"
+      "@id": "schema:thumbnailUrl"
     },
     "tickerSymbol": {
       "@id": "schema:tickerSymbol"
@@ -8479,6 +8784,9 @@
     },
     "timeToComplete": {
       "@id": "schema:timeToComplete"
+    },
+    "timestamp": {
+      "@id": "schema:timestamp"
     },
     "tissueSample": {
       "@id": "schema:tissueSample"
@@ -8526,8 +8834,7 @@
       "@id": "schema:totalTime"
     },
     "tourBookingPage": {
-      "@id": "schema:tourBookingPage",
-      "@type": "@id"
+      "@id": "schema:tourBookingPage"
     },
     "touristType": {
       "@id": "schema:touristType"
@@ -8539,8 +8846,7 @@
       "@id": "schema:trackingNumber"
     },
     "trackingUrl": {
-      "@id": "schema:trackingUrl",
-      "@type": "@id"
+      "@id": "schema:trackingUrl"
     },
     "tracks": {
       "@id": "schema:tracks"
@@ -8582,8 +8888,7 @@
       "@id": "schema:transmissionMethod"
     },
     "travelBans": {
-      "@id": "schema:travelBans",
-      "@type": "@id"
+      "@id": "schema:travelBans"
     },
     "trialDesign": {
       "@id": "schema:trialDesign"
@@ -8619,22 +8924,19 @@
       "@id": "schema:unitText"
     },
     "unnamedSourcesPolicy": {
-      "@id": "schema:unnamedSourcesPolicy",
-      "@type": "@id"
+      "@id": "schema:unnamedSourcesPolicy"
     },
     "unsaturatedFatContent": {
       "@id": "schema:unsaturatedFatContent"
     },
     "uploadDate": {
-      "@id": "schema:uploadDate",
-      "@type": "Date"
+      "@id": "schema:uploadDate"
     },
     "upvoteCount": {
       "@id": "schema:upvoteCount"
     },
     "url": {
-      "@id": "schema:url",
-      "@type": "@id"
+      "@id": "schema:url"
     },
     "urlTemplate": {
       "@id": "schema:urlTemplate"
@@ -8643,8 +8945,7 @@
       "@id": "schema:usNPI"
     },
     "usageInfo": {
-      "@id": "schema:usageInfo",
-      "@type": "@id"
+      "@id": "schema:usageInfo"
     },
     "usedToDiagnose": {
       "@id": "schema:usedToDiagnose"
@@ -8668,25 +8969,25 @@
       "@id": "schema:validForMemberTier"
     },
     "validFrom": {
-      "@id": "schema:validFrom",
-      "@type": "Date"
+      "@id": "schema:validFrom"
     },
     "validIn": {
       "@id": "schema:validIn"
     },
     "validThrough": {
-      "@id": "schema:validThrough",
-      "@type": "Date"
+      "@id": "schema:validThrough"
     },
     "validUntil": {
-      "@id": "schema:validUntil",
-      "@type": "Date"
+      "@id": "schema:validUntil"
     },
     "value": {
       "@id": "schema:value"
     },
     "valueAddedTaxIncluded": {
       "@id": "schema:valueAddedTaxIncluded"
+    },
+    "valueGroup": {
+      "@id": "schema:valueGroup"
     },
     "valueMaxLength": {
       "@id": "schema:valueMaxLength"
@@ -8737,8 +9038,7 @@
       "@id": "schema:vehicleInteriorType"
     },
     "vehicleModelDate": {
-      "@id": "schema:vehicleModelDate",
-      "@type": "Date"
+      "@id": "schema:vehicleModelDate"
     },
     "vehicleSeatingCapacity": {
       "@id": "schema:vehicleSeatingCapacity"
@@ -8753,8 +9053,7 @@
       "@id": "schema:vendor"
     },
     "verificationFactCheckingPolicy": {
-      "@id": "schema:verificationFactCheckingPolicy",
-      "@type": "@id"
+      "@id": "schema:verificationFactCheckingPolicy"
     },
     "version": {
       "@id": "schema:version"
@@ -8790,11 +9089,13 @@
       "@id": "schema:webCheckinTime"
     },
     "webFeed": {
-      "@id": "schema:webFeed",
-      "@type": "@id"
+      "@id": "schema:webFeed"
     },
     "weight": {
       "@id": "schema:weight"
+    },
+    "weightPercentage": {
+      "@id": "schema:weightPercentage"
     },
     "weightTotal": {
       "@id": "schema:weightTotal"

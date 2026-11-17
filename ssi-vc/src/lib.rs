@@ -1592,40 +1592,52 @@ impl Credential {
             None => return VerificationResult::error("Missing credentialSchema"),
         };
 
-        let status_value = match serde_json::to_value(schema.clone()) {
-            Ok(status) => status,
-            Err(e) => {
-                return VerificationResult::error(&format!(
-                    "Unable to convert credentialSchema: {}",
-                    e
-                ))
+        #[cfg(feature = "omit-json-schema")]
+        {
+            let _ = (schema, resolver, context_loader);
+            VerificationResult {
+                warnings: vec![schema::OMITTED_JSON_SCHEMA_WARNING.to_string()],
+                ..VerificationResult::new()
             }
-        };
+        }
 
-        let checkable_schemas: OneOrMany<CheckableSchema> =
-            match serde_json::from_value(status_value.clone()) {
-                Ok(checkable_status) => checkable_status,
+        #[cfg(not(feature = "omit-json-schema"))]
+        {
+            let status_value = match serde_json::to_value(schema.clone()) {
+                Ok(status) => status,
                 Err(e) => {
                     return VerificationResult::error(&format!(
-                        "Unable to parse credentialSchema: {} ({})",
-                        e, status_value
+                        "Unable to convert credentialSchema: {}",
+                        e
                     ))
                 }
             };
 
-        for checkable_schema in checkable_schemas.into_iter() {
-            let result = checkable_schema.check(self, resolver, context_loader).await;
+            let checkable_schemas: OneOrMany<CheckableSchema> =
+                match serde_json::from_value(status_value.clone()) {
+                    Ok(checkable_status) => checkable_status,
+                    Err(e) => {
+                        return VerificationResult::error(&format!(
+                            "Unable to parse credentialSchema: {} ({})",
+                            e, status_value
+                        ))
+                    }
+                };
 
-            if !result.errors.is_empty() {
-                return result;
+            for checkable_schema in checkable_schemas.into_iter() {
+                let result = checkable_schema.check(self, resolver, context_loader).await;
+
+                if !result.errors.is_empty() {
+                    return result;
+                }
             }
+
+            let mut result = VerificationResult::new();
+
+            result.checks.push(Check::Schema);
+
+            result
         }
-
-        let mut result = VerificationResult::new();
-
-        result.checks.push(Check::Schema);
-
-        result
     }
 }
 
@@ -1650,6 +1662,7 @@ impl CheckableStatus {
     }
 }
 
+#[cfg(not(feature = "omit-json-schema"))]
 impl CheckableSchema {
     async fn check(
         &self,
@@ -3835,6 +3848,7 @@ _:c14n0 <https://w3id.org/security#verificationMethod> <https://example.org/foo/
         assert_eq!(vres.status[0].status_purpose, "revocation");
     }
 
+    #[cfg(not(feature = "omit-json-schema"))]
     #[async_std::test]
     async fn credential_schema() {
         let mut context_loader = ssi_json_ld::ContextLoader::default();
@@ -3849,6 +3863,27 @@ _:c14n0 <https://w3id.org/security#verificationMethod> <https://example.org/foo/
         println!("{:#?}", result);
         assert!(result.errors.is_empty());
         assert!(result.warnings.is_empty());
+        assert!(result.checks.contains(&Check::Schema));
+    }
+
+    #[cfg(feature = "omit-json-schema")]
+    #[async_std::test]
+    async fn credential_schema_is_skipped_with_a_warning() {
+        let mut context_loader = ssi_json_ld::ContextLoader::default();
+        let mut options = LinkedDataProofOptions::default();
+        options.checks = Some(vec![Check::Schema]);
+
+        let vc = Credential::from_json(include_str!("../../examples/vc-clr.jsonld")).unwrap();
+        let result = vc
+            .verify(Some(options), &DIDExample, &mut context_loader)
+            .await;
+
+        assert!(result.errors.is_empty());
+        assert_eq!(
+            result.warnings,
+            vec![schema::OMITTED_JSON_SCHEMA_WARNING.to_string()]
+        );
+        assert!(!result.checks.contains(&Check::Schema));
     }
 
     #[async_std::test]

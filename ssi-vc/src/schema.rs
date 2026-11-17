@@ -1,5 +1,6 @@
 use crate::{Credential, CredentialSchema};
 use async_trait::async_trait;
+#[cfg(not(feature = "omit-json-schema"))]
 use boon::{Compiler, Draft, Schemas};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -11,6 +12,11 @@ use thiserror::Error;
 
 /// Maximum size of a schema loaded using [`load_schema`].
 pub const MAX_RESPONSE_LENGTH: usize = 2097152; // 2MB
+
+/// Warning returned instead of a schema check when ssi-vc is built with
+/// `omit-json-schema`.
+pub const OMITTED_JSON_SCHEMA_WARNING: &str =
+    "credentialSchema not checked: this build has no JSON Schema validator (omit-json-schema)";
 
 pub const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
@@ -35,56 +41,71 @@ impl CredentialSchema for OneEdTechJsonSchemaValidator2019 {
     ) -> VerificationResult {
         let result = VerificationResult::new();
 
-        // Check the schema URL before attempting to load it.
-        match self.id.as_str().split_once(':') {
-            Some(("https", _)) => (),
-            // TODO: an option to allow HTTP?
-            // TODO: load from DID URLs?
-            Some((_scheme, _)) => return result.with_error(format!("Invalid schema: {}", self.id)),
-            _ => return result.with_error(format!("Invalid schema id: {}", self.id)),
-        }
-
-        let credential_schema = match load_schema(self.id.as_str()).await {
-            Ok(schema) => schema,
-            Err(e) => {
-                return result.with_error(format!("Unable to fetch credential schema: {}", e));
-            }
-        };
-
-        let mut schemas = Schemas::new();
-        let mut compiler = Compiler::new();
-
-        compiler.set_default_draft(Draft::V2019_09);
-
-        match compiler.add_resource(self.id.as_str(), credential_schema) {
-            Ok(_) => (),
-            Err(e) => {
-                return result.with_error(format!("Unable to add schema to compiler: {}", e));
+        #[cfg(feature = "omit-json-schema")]
+        {
+            let _ = credential;
+            VerificationResult {
+                warnings: vec![OMITTED_JSON_SCHEMA_WARNING.to_string()],
+                ..result
             }
         }
 
-        let schema_index = match compiler.compile(self.id.as_str(), &mut schemas) {
-            Ok(index) => index,
-            Err(e) => {
-                return result.with_error(format!("Unable to compile schema: {}", e));
+        #[cfg(not(feature = "omit-json-schema"))]
+        {
+            // Check the schema URL before attempting to load it.
+            match self.id.as_str().split_once(':') {
+                Some(("https", _)) => (),
+                // TODO: an option to allow HTTP?
+                // TODO: load from DID URLs?
+                Some((_scheme, _)) => {
+                    return result.with_error(format!("Invalid schema: {}", self.id))
+                }
+                _ => return result.with_error(format!("Invalid schema id: {}", self.id)),
             }
-        };
 
-        let value_credential = match serde_json::to_value(credential) {
-            Ok(credential) => credential,
-            Err(e) => {
-                return result.with_error(format!("Unable to convert credential to JSON: {}", e));
-            }
-        };
+            let credential_schema = match load_schema(self.id.as_str()).await {
+                Ok(schema) => schema,
+                Err(e) => {
+                    return result.with_error(format!("Unable to fetch credential schema: {}", e));
+                }
+            };
 
-        match schemas.validate(&value_credential, schema_index) {
-            Ok(_) => (),
-            Err(e) => {
-                return result.with_error(format!("Schema validation error: {}", e));
+            let mut schemas = Schemas::new();
+            let mut compiler = Compiler::new();
+
+            compiler.set_default_draft(Draft::V2019_09);
+
+            match compiler.add_resource(self.id.as_str(), credential_schema) {
+                Ok(_) => (),
+                Err(e) => {
+                    return result.with_error(format!("Unable to add schema to compiler: {}", e));
+                }
             }
+
+            let schema_index = match compiler.compile(self.id.as_str(), &mut schemas) {
+                Ok(index) => index,
+                Err(e) => {
+                    return result.with_error(format!("Unable to compile schema: {}", e));
+                }
+            };
+
+            let value_credential = match serde_json::to_value(credential) {
+                Ok(credential) => credential,
+                Err(e) => {
+                    return result
+                        .with_error(format!("Unable to convert credential to JSON: {}", e));
+                }
+            };
+
+            match schemas.validate(&value_credential, schema_index) {
+                Ok(_) => (),
+                Err(e) => {
+                    return result.with_error(format!("Schema validation error: {}", e));
+                }
+            }
+
+            result
         }
-
-        result
     }
 }
 

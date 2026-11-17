@@ -8,6 +8,14 @@ description = "Implementation of JSON-LD algorithms for the ssi library."
 repository = "https://github.com/spruceid/ssi/"
 documentation = "https://docs.rs/ssi-json-ld/"
 
+[features]
+## Leave the schema.org (~200 KB) and W3C CCG traceability (~123 KB) contexts
+## out of the static loader, so they aren't linked into the binary. Lookups for
+## those IRIs then fall through to the caller's context map. Meant for size-bound
+## builds like didkit-wasm. It's a subtractive feature: anything else built in
+## the same cargo invocation loses the two contexts too.
+omit-large-contexts = []
+
 [dependencies]
 thiserror = "1.0"
 async-std = { version = "1.9", features = ["attributes"] }

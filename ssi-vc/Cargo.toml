@@ -8,6 +8,15 @@ description = "Implementation of Verifiable Credentials and Presentations for th
 repository = "https://github.com/spruceid/ssi/"
 documentation = "https://docs.rs/ssi-vc/"
 
+[features]
+## Skip JSON Schema (credentialSchema) validation, so the boon validator and
+## the regex engine it pulls in (~925 KB in the didkit WASM) aren't linked in.
+## A credentialSchema check then returns a warning and doesn't list
+## credentialSchema in `checks`. Meant for size-bound builds like didkit-wasm.
+## It's a subtractive feature: anything else built in the same cargo
+## invocation loses schema validation too.
+omit-json-schema = []
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

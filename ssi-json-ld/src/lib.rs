@@ -395,6 +395,7 @@ impl Loader<IriBuf, Span> for StaticLoader {
                     ODRL_CONTEXT => Ok(ODRL_CONTEXT_DOCUMENT.clone()),
                     SECURITY_V1_CONTEXT => Ok(SECURITY_V1_CONTEXT_DOCUMENT.clone()),
                     SECURITY_V2_CONTEXT => Ok(SECURITY_V2_CONTEXT_DOCUMENT.clone()),
+                    #[cfg(not(feature = "omit-large-contexts"))]
                     SCHEMA_ORG_CONTEXT => Ok(SCHEMA_ORG_CONTEXT_DOCUMENT.clone()),
                     DID_V1_CONTEXT | DID_V1_CONTEXT_NO_WWW | W3ID_DID_V1_CONTEXT => {
                         Ok(DID_V1_CONTEXT_DOCUMENT.clone())
@@ -414,6 +415,7 @@ impl Loader<IriBuf, Span> for StaticLoader {
                     BLOCKCHAIN2021_V1_CONTEXT => Ok(BLOCKCHAIN2021_V1_CONTEXT_DOCUMENT.clone()),
                     CITIZENSHIP_V1_CONTEXT => Ok(CITIZENSHIP_V1_CONTEXT_DOCUMENT.clone()),
                     VACCINATION_V1_CONTEXT => Ok(VACCINATION_V1_CONTEXT_DOCUMENT.clone()),
+                    #[cfg(not(feature = "omit-large-contexts"))]
                     TRACEABILITY_CONTEXT => Ok(TRACEABILITY_CONTEXT_DOCUMENT.clone()),
                     REVOCATION_LIST_2020_V1_CONTEXT => {
                         Ok(REVOCATION_LIST_2020_V1_CONTEXT_DOCUMENT.clone())
@@ -929,6 +931,48 @@ mod test {
         .unwrap();
 
         json_to_dataset(input, &mut ContextLoader::default(), None)
+            .await
+            .unwrap();
+    }
+
+    fn schema_org_document() -> Meta<syntax::Value<Span>, Span> {
+        syntax::to_value_with(
+            json!({
+                "@context": "https://schema.org/",
+                "@type": "Person",
+                "name": "Jane Doe"
+            }),
+            Span::default,
+        )
+        .unwrap()
+    }
+
+    #[cfg(not(feature = "omit-large-contexts"))]
+    #[tokio::test]
+    async fn static_loader_includes_large_contexts_by_default() {
+        json_to_dataset(schema_org_document(), &mut ContextLoader::default(), None)
+            .await
+            .unwrap();
+    }
+
+    #[cfg(feature = "omit-large-contexts")]
+    #[tokio::test]
+    async fn omitted_large_contexts_fall_through_to_the_context_map() {
+        let missing =
+            json_to_dataset(schema_org_document(), &mut ContextLoader::default(), None).await;
+        assert!(missing.is_err());
+
+        let mut loader = ContextLoader::default()
+            .with_context_map_from(
+                [(
+                    "https://schema.org/".to_string(),
+                    r#"{"@context": {"@vocab": "https://schema.org/"}}"#.to_string(),
+                )]
+                .into_iter()
+                .collect(),
+            )
+            .unwrap();
+        json_to_dataset(schema_org_document(), &mut loader, None)
             .await
             .unwrap();
     }
